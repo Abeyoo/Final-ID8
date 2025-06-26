@@ -297,7 +297,7 @@ const DevelopmentPlans: React.FC = () => {
       {/* New Goal Form Modal */}
       {showNewGoalForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+          <div className="bg-white rounded-xl p-4 w-full max-w-sm mx-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Create New Goal</h2>
               <button
