@@ -7,7 +7,8 @@ const DevelopmentPlans: React.FC = () => {
     title: '',
     description: '',
     category: 'Communication',
-    deadline: ''
+    deadline: '',
+    milestones: ['', '', '', '']
   });
 
   const [goals, setGoals] = useState([
@@ -66,11 +67,33 @@ const DevelopmentPlans: React.FC = () => {
     }));
   };
 
+  const handleMilestoneChange = (index: number, value: string) => {
+    setNewGoalForm(prev => ({
+      ...prev,
+      milestones: prev.milestones.map((milestone, i) => i === index ? value : milestone)
+    }));
+  };
+
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newGoalForm.title.trim() || !newGoalForm.description.trim() || !newGoalForm.deadline) {
       return; // Basic validation
+    }
+
+    // Filter out empty milestones and create milestone objects
+    const milestones = newGoalForm.milestones
+      .filter(milestone => milestone.trim() !== '')
+      .map(milestone => ({ title: milestone.trim(), completed: false }));
+
+    // If no custom milestones, add default ones
+    if (milestones.length === 0) {
+      milestones.push(
+        { title: 'Get started', completed: false },
+        { title: 'Mid-way checkpoint', completed: false },
+        { title: 'Final review', completed: false },
+        { title: 'Complete goal', completed: false }
+      );
     }
 
     const newGoal = {
@@ -81,12 +104,7 @@ const DevelopmentPlans: React.FC = () => {
       progress: 0,
       deadline: newGoalForm.deadline,
       status: 'active' as const,
-      milestones: [
-        { title: 'Get started', completed: false },
-        { title: 'Mid-way checkpoint', completed: false },
-        { title: 'Final review', completed: false },
-        { title: 'Complete goal', completed: false },
-      ]
+      milestones: milestones
     };
 
     setGoals(prev => [...prev, newGoal]);
@@ -94,7 +112,8 @@ const DevelopmentPlans: React.FC = () => {
       title: '',
       description: '',
       category: 'Communication',
-      deadline: ''
+      deadline: '',
+      milestones: ['', '', '', '']
     });
     setShowNewGoalForm(false);
   };
@@ -330,6 +349,22 @@ const DevelopmentPlans: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Milestones (Optional)</label>
+                <div className="space-y-2">
+                  {newGoalForm.milestones.map((milestone, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={milestone}
+                      onChange={(e) => handleMilestoneChange(index, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      placeholder={`Milestone ${index + 1}`}
+                    />
+                  ))}
+                  <p className="text-xs text-gray-500">Leave empty for default milestones. Only filled milestones will be added.</p>
+                </div>
               </div>
               <div className="flex space-x-3 pt-4">
                 <button
