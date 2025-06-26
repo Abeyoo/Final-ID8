@@ -94,7 +94,7 @@ function App() {
     setShowSignUp(false);
   };
 
-  const handleBackToSignIn = () => {
+  const handleOnboardingBackToSignIn = () => {
     // Keep onboarding status but go back to sign in
     setIsAuthenticated(false);
     setUserProfile(null);
@@ -121,7 +121,7 @@ function App() {
     return (
       <Onboarding 
         onComplete={handleOnboardingComplete} 
-        onBackToSignIn={handleBackToSignIn}
+        onBackToSignIn={handleOnboardingBackToSignIn}
       />
     );
   }
