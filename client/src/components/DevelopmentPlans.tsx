@@ -74,6 +74,29 @@ const DevelopmentPlans: React.FC = () => {
     }));
   };
 
+  const toggleMilestone = (goalId: number, milestoneIndex: number) => {
+    setGoals(prev => prev.map(goal => {
+      if (goal.id === goalId) {
+        const updatedMilestones = goal.milestones.map((milestone, index) => 
+          index === milestoneIndex 
+            ? { ...milestone, completed: !milestone.completed }
+            : milestone
+        );
+        
+        // Calculate new progress based on completed milestones
+        const completedCount = updatedMilestones.filter(m => m.completed).length;
+        const progress = Math.round((completedCount / updatedMilestones.length) * 100);
+        
+        return {
+          ...goal,
+          milestones: updatedMilestones,
+          progress: progress
+        };
+      }
+      return goal;
+    }));
+  };
+
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -203,11 +226,16 @@ const DevelopmentPlans: React.FC = () => {
               <div className="space-y-2">
                 {goal.milestones.map((milestone, index) => (
                   <div key={index} className="flex items-center space-x-2">
-                    <CheckCircle
-                      size={16}
-                      className={milestone.completed ? 'text-green-500' : 'text-gray-300'}
-                    />
-                    <span className={`text-sm ${milestone.completed ? 'text-gray-900 line-through' : 'text-gray-700'}`}>
+                    <button
+                      onClick={() => toggleMilestone(goal.id, index)}
+                      className="hover:scale-110 transition-transform"
+                    >
+                      <CheckCircle
+                        size={16}
+                        className={milestone.completed ? 'text-green-500' : 'text-gray-300 hover:text-gray-400'}
+                      />
+                    </button>
+                    <span className={`text-sm ${milestone.completed ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
                       {milestone.title}
                     </span>
                   </div>
