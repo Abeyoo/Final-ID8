@@ -23,7 +23,7 @@ function App() {
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   // Check localStorage for previous onboarding completion
   useEffect(() => {
@@ -84,6 +84,13 @@ function App() {
     setShowSignUp(false);
   };
 
+  const handleCreateAccount = () => {
+    // Set user as authenticated and onboarded to go directly to Profile Creation (Dashboard)
+    setIsAuthenticated(true);
+    setIsOnboarded(true);
+    setUserProfile({ name: 'New User' }); // Basic profile for new account creation
+  };
+
   const handleBackToOnboarding = () => {
     // Clear localStorage and reset states for new user
     localStorage.removeItem('id8_onboarding_completed');
@@ -111,7 +118,7 @@ function App() {
     return (
       <SignIn 
         onSignIn={handleSignIn} 
-        onGoToOnboarding={handleBackToOnboarding}
+        onGoToOnboarding={handleCreateAccount}
       />
     );
   }
