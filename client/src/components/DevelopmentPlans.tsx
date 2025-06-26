@@ -3,8 +3,14 @@ import { Target, Plus, CheckCircle, Clock, TrendingUp, BookOpen } from 'lucide-r
 
 const DevelopmentPlans: React.FC = () => {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
+  const [newGoalForm, setNewGoalForm] = useState({
+    title: '',
+    description: '',
+    category: 'Communication',
+    deadline: ''
+  });
 
-  const goals = [
+  const [goals, setGoals] = useState([
     {
       id: 1,
       title: 'Improve Public Speaking',
@@ -50,7 +56,48 @@ const DevelopmentPlans: React.FC = () => {
         { title: 'Create data visualization project', completed: false },
       ]
     }
-  ];
+  ]);
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewGoalForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateGoal = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newGoalForm.title.trim() || !newGoalForm.description.trim() || !newGoalForm.deadline) {
+      return; // Basic validation
+    }
+
+    const newGoal = {
+      id: goals.length + 1,
+      title: newGoalForm.title,
+      description: newGoalForm.description,
+      category: newGoalForm.category,
+      progress: 0,
+      deadline: newGoalForm.deadline,
+      status: 'active' as const,
+      milestones: [
+        { title: 'Get started', completed: false },
+        { title: 'Mid-way checkpoint', completed: false },
+        { title: 'Final review', completed: false },
+        { title: 'Complete goal', completed: false },
+      ]
+    };
+
+    setGoals(prev => [...prev, newGoal]);
+    setNewGoalForm({
+      title: '',
+      description: '',
+      category: 'Communication',
+      deadline: ''
+    });
+    setShowNewGoalForm(false);
+  };
 
   const resources = [
     {
@@ -233,38 +280,55 @@ const DevelopmentPlans: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Goal</h2>
-            <form className="space-y-4">
+            <form onSubmit={handleCreateGoal} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Goal Title</label>
                 <input
                   type="text"
+                  name="title"
+                  value={newGoalForm.title}
+                  onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   placeholder="Enter your goal"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
+                  name="description"
+                  value={newGoalForm.description}
+                  onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   rows={3}
                   placeholder="Describe your goal"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                  <option>Communication</option>
-                  <option>Leadership</option>
-                  <option>Technical</option>
-                  <option>Creative</option>
-                  <option>Academic</option>
+                <select 
+                  name="category"
+                  value={newGoalForm.category}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="Communication">Communication</option>
+                  <option value="Leadership">Leadership</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Creative">Creative</option>
+                  <option value="Academic">Academic</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
                 <input
                   type="date"
+                  name="deadline"
+                  value={newGoalForm.deadline}
+                  onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  required
                 />
               </div>
               <div className="flex space-x-3 pt-4">
@@ -277,7 +341,6 @@ const DevelopmentPlans: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  onClick={() => setShowNewGoalForm(false)}
                   className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg"
                 >
                   Create Goal
