@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, Plus, CheckCircle, Clock, TrendingUp, BookOpen } from 'lucide-react';
+import { Target, Plus, CheckCircle, Clock, TrendingUp, BookOpen, X } from 'lucide-react';
 
 const DevelopmentPlans: React.FC = () => {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
@@ -298,7 +298,15 @@ const DevelopmentPlans: React.FC = () => {
       {showNewGoalForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Goal</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Create New Goal</h2>
+              <button
+                onClick={() => setShowNewGoalForm(false)}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
             <form onSubmit={handleCreateGoal} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Goal Title</label>
