@@ -10,6 +10,7 @@ import Schedule from './components/Schedule';
 import Community from './components/Community';
 import Onboarding from './components/Onboarding';
 import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
 import TeamFinder from './components/TeamFinder';
 import ProjectBoard from './components/ProjectBoard';
 import AIChat from './components/AIChat';
@@ -21,6 +22,7 @@ function App() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
   // Check localStorage for previous onboarding completion
@@ -67,6 +69,21 @@ function App() {
     setIsAuthenticated(true);
   };
 
+  const handleGoToSignUp = () => {
+    setShowSignUp(true);
+  };
+
+  const handleBackToSignIn = () => {
+    setShowSignUp(false);
+  };
+
+  const handleSignUp = (profile: any) => {
+    setUserProfile(profile);
+    setIsAuthenticated(true);
+    setIsOnboarded(false); // Show onboarding after sign up
+    setShowSignUp(false);
+  };
+
   const handleBackToOnboarding = () => {
     // Clear localStorage and reset states for new user
     localStorage.removeItem('id8_onboarding_completed');
@@ -74,6 +91,7 @@ function App() {
     setIsOnboarded(false);
     setIsAuthenticated(false);
     setUserProfile(null);
+    setShowSignUp(false);
   };
 
   const handleBackToSignIn = () => {
