@@ -88,22 +88,22 @@ function App() {
     // Note: We keep isOnboarded as true so they go to sign-in, not onboarding
   };
 
-  // Show onboarding for new users
+  // Show sign-in as the landing page for unauthenticated users
+  if (!isAuthenticated) {
+    return (
+      <SignIn 
+        onSignIn={handleSignIn} 
+        onGoToOnboarding={handleBackToOnboarding}
+      />
+    );
+  }
+
+  // Show onboarding for authenticated users who haven't completed onboarding
   if (!isOnboarded) {
     return (
       <Onboarding 
         onComplete={handleOnboardingComplete} 
         onBackToSignIn={handleBackToSignIn}
-      />
-    );
-  }
-
-  // Show sign-in for returning users who aren't authenticated
-  if (!isAuthenticated) {
-    return (
-      <SignIn 
-        onSignIn={handleSignIn} 
-        onBackToOnboarding={handleBackToOnboarding}
       />
     );
   }
