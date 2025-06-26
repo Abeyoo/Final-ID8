@@ -47,7 +47,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Profile Creation
+          Dashboard
         </h1>
         <p className="text-gray-600">Here's your progress overview and personalized insights.</p>
       </div>
