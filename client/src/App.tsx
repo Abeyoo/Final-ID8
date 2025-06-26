@@ -85,10 +85,10 @@ function App() {
   };
 
   const handleCreateAccount = () => {
-    // Set user as authenticated and onboarded to go directly to Profile Creation (Dashboard)
+    // Set user as authenticated but not onboarded to go to Onboarding flow
     setIsAuthenticated(true);
-    setIsOnboarded(true);
-    setUserProfile({ name: 'New User' }); // Basic profile for new account creation
+    setIsOnboarded(false);
+    setUserProfile(null);
   };
 
   const handleBackToOnboarding = () => {
