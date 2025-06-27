@@ -3,6 +3,8 @@ import { Target, Plus, CheckCircle, Clock, TrendingUp, BookOpen, X } from 'lucid
 
 const DevelopmentPlans: React.FC = () => {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [completedGoalsCount, setCompletedGoalsCount] = useState(0);
   const [newGoalForm, setNewGoalForm] = useState({
     title: '',
     description: '',
@@ -86,6 +88,24 @@ const DevelopmentPlans: React.FC = () => {
         // Calculate new progress based on completed milestones
         const completedCount = updatedMilestones.filter(m => m.completed).length;
         const progress = Math.round((completedCount / updatedMilestones.length) * 100);
+        
+        // Check if goal is now complete
+        if (progress === 100 && goal.progress < 100) {
+          // Show confetti celebration
+          setShowConfetti(true);
+          setCompletedGoalsCount(prev => prev + 1);
+          
+          // Hide confetti after 3 seconds
+          setTimeout(() => setShowConfetti(false), 3000);
+          
+          // Hide the goal by setting status to completed
+          return {
+            ...goal,
+            milestones: updatedMilestones,
+            progress: progress,
+            status: 'completed' as const
+          };
+        }
         
         return {
           ...goal,
@@ -184,7 +204,7 @@ const DevelopmentPlans: React.FC = () => {
 
       {/* Goals Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {goals.map((goal) => (
+        {goals.filter(goal => goal.status === 'active').map((goal) => (
           <div key={goal.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
@@ -291,15 +311,19 @@ const DevelopmentPlans: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Communication</span>
-                  <span className="text-sm font-semibold">1 goal</span>
+                  <span className="text-sm font-semibold">{goals.filter(g => g.category === 'Communication' && g.status === 'active').length} goal{goals.filter(g => g.category === 'Communication' && g.status === 'active').length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Leadership</span>
-                  <span className="text-sm font-semibold">1 goal</span>
+                  <span className="text-sm font-semibold">{goals.filter(g => g.category === 'Leadership' && g.status === 'active').length} goal{goals.filter(g => g.category === 'Leadership' && g.status === 'active').length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Technical</span>
-                  <span className="text-sm font-semibold">1 goal</span>
+                  <span className="text-sm font-semibold">{goals.filter(g => g.category === 'Technical' && g.status === 'active').length} goal{goals.filter(g => g.category === 'Technical' && g.status === 'active').length !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Goals Completed</span>
+                  <span className="text-sm font-semibold text-green-600">{completedGoalsCount} completed</span>
                 </div>
               </div>
             </div>
@@ -419,6 +443,31 @@ const DevelopmentPlans: React.FC = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Confetti Celebration */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-8 shadow-2xl border-4 border-green-500 animate-bounce">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-2xl font-bold text-green-600 mb-2">Goal Completed!</h2>
+                <p className="text-gray-600">Congratulations on your achievement!</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Animated confetti pieces */}
+          <div className="absolute top-0 left-1/4 w-4 h-4 bg-yellow-400 rounded-full animate-ping" style={{animationDelay: '0s'}} />
+          <div className="absolute top-10 left-1/2 w-3 h-3 bg-red-400 rounded-full animate-ping" style={{animationDelay: '0.2s'}} />
+          <div className="absolute top-0 right-1/4 w-4 h-4 bg-blue-400 rounded-full animate-ping" style={{animationDelay: '0.4s'}} />
+          <div className="absolute top-20 left-1/3 w-2 h-2 bg-green-400 rounded-full animate-ping" style={{animationDelay: '0.6s'}} />
+          <div className="absolute top-16 right-1/3 w-3 h-3 bg-purple-400 rounded-full animate-ping" style={{animationDelay: '0.8s'}} />
+          <div className="absolute top-8 left-2/3 w-4 h-4 bg-pink-400 rounded-full animate-ping" style={{animationDelay: '1s'}} />
+          <div className="absolute top-12 right-1/2 w-2 h-2 bg-orange-400 rounded-full animate-ping" style={{animationDelay: '1.2s'}} />
+          <div className="absolute top-24 left-1/5 w-3 h-3 bg-indigo-400 rounded-full animate-ping" style={{animationDelay: '1.4s'}} />
         </div>
       )}
     </div>
