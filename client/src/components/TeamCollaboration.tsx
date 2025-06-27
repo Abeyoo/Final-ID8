@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X } from 'lucide-react';
+import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target } from 'lucide-react';
 
 const TeamCollaboration: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'teams' | 'projects'>('teams');
   const [showCreateTeamForm, setShowCreateTeamForm] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
+  const [progressUpdate, setProgressUpdate] = useState({
+    newProgress: 0,
+    updateNote: '',
+    milestone: ''
+  });
   const [newTeamForm, setNewTeamForm] = useState({
     name: '',
     description: '',
@@ -141,6 +148,45 @@ const TeamCollaboration: React.FC = () => {
     setShowCreateTeamForm(false);
   };
 
+  const handleProgressUpdate = (teamId: number) => {
+    const team = teams.find(t => t.id === teamId);
+    if (team) {
+      setSelectedTeamId(teamId);
+      setProgressUpdate({
+        newProgress: team.progress,
+        updateNote: '',
+        milestone: ''
+      });
+      setShowProgressModal(true);
+    }
+  };
+
+  const submitProgressUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (selectedTeamId === null) return;
+
+    setTeams(prev => prev.map(team => {
+      if (team.id === selectedTeamId) {
+        return {
+          ...team,
+          progress: progressUpdate.newProgress,
+          lastUpdate: new Date().toISOString()
+        };
+      }
+      return team;
+    }));
+
+    // Reset form and close modal
+    setProgressUpdate({
+      newProgress: 0,
+      updateNote: '',
+      milestone: ''
+    });
+    setShowProgressModal(false);
+    setSelectedTeamId(null);
+  };
+
   const availableTeams = [
     {
       name: 'Robotics Club',
@@ -256,6 +302,15 @@ const TeamCollaboration: React.FC = () => {
                       <button className="p-2 text-gray-600 hover:text-blue-600 transition-colors">
                         <FileText size={16} />
                       </button>
+                      {team.role === 'Team Leader' && (
+                        <button 
+                          onClick={() => handleProgressUpdate(team.id)}
+                          className="p-2 text-gray-600 hover:text-purple-600 transition-colors"
+                          title="Update Progress"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -507,6 +562,148 @@ const TeamCollaboration: React.FC = () => {
                   className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   Create Team
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Update Modal */}
+      {showProgressModal && selectedTeamId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <Target size={24} className="text-purple-600" />
+                <h2 className="text-xl font-bold text-gray-900">Update Team Progress</h2>
+              </div>
+              <button
+                onClick={() => setShowProgressModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+            
+            <form onSubmit={submitProgressUpdate} className="p-6 space-y-6">
+              {/* Current vs New Progress */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-600">Current Progress</span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {teams.find(t => t.id === selectedTeamId)?.progress}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full bg-gray-400 transition-all duration-300"
+                    style={{ width: `${teams.find(t => t.id === selectedTeamId)?.progress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* New Progress Slider */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  New Progress: {progressUpdate.newProgress}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={progressUpdate.newProgress}
+                  onChange={(e) => setProgressUpdate(prev => ({ ...prev, newProgress: parseInt(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0%</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              {/* Quick Progress Buttons */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quick Update
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[25, 50, 75, 100].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setProgressUpdate(prev => ({ ...prev, newProgress: value }))}
+                      className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+                        progressUpdate.newProgress === value
+                          ? 'bg-purple-100 border-purple-300 text-purple-700'
+                          : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {value}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Milestone Achievement */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Milestone Achieved (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={progressUpdate.milestone}
+                  onChange={(e) => setProgressUpdate(prev => ({ ...prev, milestone: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="e.g., Completed research phase, First prototype ready"
+                />
+              </div>
+
+              {/* Update Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Progress Notes (Optional)
+                </label>
+                <textarea
+                  value={progressUpdate.updateNote}
+                  onChange={(e) => setProgressUpdate(prev => ({ ...prev, updateNote: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="What was accomplished? What's next?"
+                  rows={3}
+                />
+              </div>
+
+              {/* Progress Preview */}
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-purple-700">New Progress</span>
+                  <span className="text-lg font-bold text-purple-900">{progressUpdate.newProgress}%</span>
+                </div>
+                <div className="w-full bg-purple-200 rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
+                    style={{ width: `${progressUpdate.newProgress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowProgressModal(false)}
+                  className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  Update Progress
                 </button>
               </div>
             </form>
