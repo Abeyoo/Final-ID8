@@ -166,22 +166,49 @@ const DevelopmentPlans: React.FC = () => {
       title: 'Public Speaking Masterclass',
       type: 'Course',
       duration: '4 weeks',
-      provider: 'SkillShare',
-      rating: 4.8
+      provider: 'Coursera',
+      rating: 4.8,
+      url: 'https://www.coursera.org/learn/public-speaking'
     },
     {
       title: 'The Leader in Me',
       type: 'Book',
       duration: '8 hours',
       provider: 'Stephen Covey',
-      rating: 4.7
+      rating: 4.7,
+      url: 'https://www.amazon.com/Leader-Me-Giving-Children-Become/dp/1476759262'
     },
     {
       title: 'Data Analysis with Excel',
       type: 'Tutorial',
       duration: '12 hours',
       provider: 'Khan Academy',
-      rating: 4.9
+      rating: 4.9,
+      url: 'https://www.khanacademy.org/computing/computer-programming/programming-natural-simulations'
+    },
+    {
+      title: 'Leadership Skills for Managers',
+      type: 'Course',
+      duration: '6 weeks',
+      provider: 'edX',
+      rating: 4.6,
+      url: 'https://www.edx.org/course/leadership-skills-for-managers'
+    },
+    {
+      title: 'Introduction to Programming',
+      type: 'Course',
+      duration: '10 weeks',
+      provider: 'freeCodeCamp',
+      rating: 4.9,
+      url: 'https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/'
+    },
+    {
+      title: 'Effective Communication Skills',
+      type: 'Course',
+      duration: '5 weeks',
+      provider: 'Udemy',
+      rating: 4.5,
+      url: 'https://www.udemy.com/course/communication-skills-machine/'
     }
   ];
 
@@ -289,9 +316,14 @@ const DevelopmentPlans: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <button className="text-purple-600 text-sm font-medium hover:text-purple-700">
-                    View
-                  </button>
+                  <a 
+                    href={resource.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-purple-600 text-sm font-medium hover:text-purple-700 px-3 py-1 border border-purple-200 rounded hover:bg-purple-50 transition-colors"
+                  >
+                    View Resource
+                  </a>
                 </div>
               </div>
             ))}
