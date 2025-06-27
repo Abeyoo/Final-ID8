@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle } from 'lucide-react';
+import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X } from 'lucide-react';
 
 const TeamCollaboration: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'teams' | 'projects'>('teams');
+  const [showCreateTeamForm, setShowCreateTeamForm] = useState(false);
+  const [newTeamForm, setNewTeamForm] = useState({
+    name: '',
+    description: '',
+    category: 'Academic',
+    skills: [''],
+    maxMembers: 5,
+    isPrivate: false
+  });
 
-  const teams = [
+  const [teams, setTeams] = useState([
     {
       id: 1,
       name: 'Science Fair Team',
@@ -13,7 +22,9 @@ const TeamCollaboration: React.FC = () => {
       role: 'Team Leader',
       progress: 75,
       deadline: '2024-05-15',
-      status: 'active'
+      status: 'active',
+      category: 'Academic',
+      skills: ['Research', 'Engineering', 'Presentation']
     },
     {
       id: 2,
@@ -23,7 +34,9 @@ const TeamCollaboration: React.FC = () => {
       role: 'Stage Manager',
       progress: 45,
       deadline: '2024-06-20',
-      status: 'active'
+      status: 'active',
+      category: 'Creative',
+      skills: ['Organization', 'Creative Arts', 'Leadership']
     },
     {
       id: 3,
@@ -33,9 +46,11 @@ const TeamCollaboration: React.FC = () => {
       role: 'Member',
       progress: 60,
       deadline: '2024-04-30',
-      status: 'active'
+      status: 'active',
+      category: 'Academic',
+      skills: ['Mathematics', 'Problem Solving', 'Competition']
     }
-  ];
+  ]);
 
   const projects = [
     {
@@ -68,6 +83,64 @@ const TeamCollaboration: React.FC = () => {
     }
   ];
 
+  const handleSkillChange = (index: number, value: string) => {
+    setNewTeamForm(prev => ({
+      ...prev,
+      skills: prev.skills.map((skill, i) => i === index ? value : skill)
+    }));
+  };
+
+  const addSkillField = () => {
+    setNewTeamForm(prev => ({
+      ...prev,
+      skills: [...prev.skills, '']
+    }));
+  };
+
+  const removeSkillField = (index: number) => {
+    if (newTeamForm.skills.length > 1) {
+      setNewTeamForm(prev => ({
+        ...prev,
+        skills: prev.skills.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const handleCreateTeam = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newTeamForm.name.trim() || !newTeamForm.description.trim()) {
+      return; // Basic validation
+    }
+
+    // Filter out empty skills
+    const skills = newTeamForm.skills.filter(skill => skill.trim() !== '');
+
+    const newTeam = {
+      id: teams.length + 1,
+      name: newTeamForm.name,
+      description: newTeamForm.description,
+      members: 1, // Creator is the first member
+      role: 'Team Leader',
+      progress: 0,
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      status: 'active' as const,
+      category: newTeamForm.category,
+      skills: skills.length > 0 ? skills : ['General']
+    };
+
+    setTeams(prev => [...prev, newTeam]);
+    setNewTeamForm({
+      name: '',
+      description: '',
+      category: 'Academic',
+      skills: [''],
+      maxMembers: 5,
+      isPrivate: false
+    });
+    setShowCreateTeamForm(false);
+  };
+
   const availableTeams = [
     {
       name: 'Robotics Club',
@@ -97,7 +170,10 @@ const TeamCollaboration: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Team Collaboration</h1>
           <p className="text-gray-600">Connect with teammates and manage group projects effectively.</p>
         </div>
-        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all">
+        <button
+          onClick={() => setShowCreateTeamForm(true)}
+          className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+        >
           <Plus size={20} className="mr-2" />
           Create Team
         </button>
@@ -283,6 +359,158 @@ const TeamCollaboration: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Create Team Form Modal */}
+      {showCreateTeamForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">Create New Team</h2>
+              <button
+                onClick={() => setShowCreateTeamForm(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateTeam} className="p-6 space-y-6">
+              {/* Team Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Team Name *
+                </label>
+                <input
+                  type="text"
+                  value={newTeamForm.name}
+                  onChange={(e) => setNewTeamForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter team name"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={newTeamForm.description}
+                  onChange={(e) => setNewTeamForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Describe your team's purpose and goals"
+                  rows={3}
+                  required
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  value={newTeamForm.category}
+                  onChange={(e) => setNewTeamForm(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="Academic">Academic</option>
+                  <option value="Creative">Creative</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Community Service">Community Service</option>
+                  <option value="Business">Business</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Skills Required */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Skills Required
+                </label>
+                <div className="space-y-2">
+                  {newTeamForm.skills.map((skill, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={skill}
+                        onChange={(e) => handleSkillChange(index, e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Enter required skill"
+                      />
+                      {newTeamForm.skills.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeSkillField(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addSkillField}
+                    className="flex items-center text-purple-600 text-sm font-medium hover:text-purple-700"
+                  >
+                    <Plus size={16} className="mr-1" />
+                    Add Another Skill
+                  </button>
+                </div>
+              </div>
+
+              {/* Max Members */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Maximum Members
+                </label>
+                <input
+                  type="number"
+                  value={newTeamForm.maxMembers}
+                  onChange={(e) => setNewTeamForm(prev => ({ ...prev, maxMembers: parseInt(e.target.value) || 5 }))}
+                  min="2"
+                  max="20"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Privacy Setting */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="isPrivate"
+                  checked={newTeamForm.isPrivate}
+                  onChange={(e) => setNewTeamForm(prev => ({ ...prev, isPrivate: e.target.checked }))}
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isPrivate" className="text-sm text-gray-700">
+                  Private team (invitation only)
+                </label>
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateTeamForm(false)}
+                  className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  Create Team
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
