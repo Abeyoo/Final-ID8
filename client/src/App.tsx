@@ -67,6 +67,8 @@ function App() {
   const handleSignIn = (profile: any) => {
     setUserProfile(profile);
     setIsAuthenticated(true);
+    // If the user has profile data, they've completed onboarding
+    setIsOnboarded(true);
   };
 
   const handleGoToSignUp = () => {
@@ -93,8 +95,8 @@ function App() {
 
   const handleBackToOnboarding = () => {
     // Clear localStorage and reset states for new user
-    localStorage.removeItem('id8_onboarding_completed');
-    localStorage.removeItem('id8_user_profile');
+    localStorage.removeItem('thinkle_onboarding_completed');
+    localStorage.removeItem('thinkle_user_profile');
     setIsOnboarded(false);
     setIsAuthenticated(false);
     setUserProfile(null);
