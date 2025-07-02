@@ -5,6 +5,33 @@ const Opportunities: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
+  const trackOpportunityInteraction = async (
+    opportunity: any, 
+    actionType: 'viewed' | 'applied' | 'bookmarked' | 'shared'
+  ) => {
+    try {
+      await fetch('/api/opportunities/interaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 1, // TODO: Get from user context
+          opportunityType: opportunity.type.toLowerCase(),
+          category: opportunity.category,
+          title: opportunity.title,
+          actionType,
+          interactionData: {
+            description: opportunity.description,
+            deadline: opportunity.deadline,
+            match: opportunity.match,
+            requirements: opportunity.requirements
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Failed to track opportunity interaction:', error);
+    }
+  };
+
   const opportunities = [
     {
       id: 1,
@@ -181,7 +208,10 @@ const Opportunities: React.FC = () => {
                 </div>
               </div>
               
-              <button className="w-full mt-4 bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+              <button 
+                onClick={() => trackOpportunityInteraction(opportunity, 'applied')}
+                className="w-full mt-4 bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
                 Apply Now
               </button>
             </div>
@@ -251,10 +281,16 @@ const Opportunities: React.FC = () => {
                     <div className="text-xs text-gray-500">Match Score</div>
                   </div>
                   <div className="space-y-2">
-                    <button className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-sm">
+                    <button 
+                      onClick={() => trackOpportunityInteraction(opportunity, 'applied')}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-sm"
+                    >
                       Apply Now
                     </button>
-                    <button className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center">
+                    <button 
+                      onClick={() => trackOpportunityInteraction(opportunity, 'viewed')}
+                      className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center"
+                    >
                       <ExternalLink size={14} className="mr-1" />
                       Learn More
                     </button>

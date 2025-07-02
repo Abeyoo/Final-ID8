@@ -144,6 +144,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Track opportunity interactions
+  app.post("/api/opportunities/interaction", async (req, res) => {
+    try {
+      const { userId, opportunityType, category, title, actionType, interactionData } = req.body;
+      
+      await personalityAI.trackOpportunityInteraction(
+        userId, 
+        opportunityType, 
+        category, 
+        title, 
+        actionType, 
+        interactionData
+      );
+      
+      // Trigger personality analysis for significant opportunity actions
+      if (['applied', 'completed_application'].includes(actionType)) {
+        const analysis = await personalityAI.analyzeUserPersonality(userId);
+        res.json({ success: true, personalityUpdate: analysis });
+      } else {
+        res.json({ success: true });
+      }
+    } catch (error) {
+      console.error('Opportunity tracking error:', error);
+      res.status(500).json({ error: 'Failed to track opportunity interaction' });
+    }
+  });
+
+  // Get user's personality percentiles
+  app.get("/api/personality/:userId/percentiles", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const percentiles = await personalityAI.getUserPercentiles(userId);
+      res.json(percentiles);
+    } catch (error) {
+      console.error('Get percentiles error:', error);
+      res.status(500).json({ error: 'Failed to get personality percentiles' });
+    }
+  });
+
+  // Recalculate all percentiles (admin endpoint)
+  app.post("/api/personality/recalculate-percentiles", async (req, res) => {
+    try {
+      await personalityAI.recalculateAllPercentiles();
+      res.json({ success: true, message: 'Percentiles recalculated for all users' });
+    } catch (error) {
+      console.error('Recalculate percentiles error:', error);
+      res.status(500).json({ error: 'Failed to recalculate percentiles' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

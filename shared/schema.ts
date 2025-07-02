@@ -53,6 +53,27 @@ export const teamInteractions = pgTable("team_interactions", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+export const opportunities = pgTable("opportunities", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  opportunityType: text("opportunity_type").notNull(), // 'competition', 'internship', 'scholarship', 'program'
+  category: text("category").notNull(), // 'STEM', 'Arts', 'Leadership', 'Sports', etc.
+  title: text("title").notNull(),
+  description: text("description"),
+  actionType: text("action_type").notNull(), // 'viewed', 'applied', 'bookmarked', 'shared'
+  interactionData: jsonb("interaction_data"), // Additional context about the interaction
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+export const personalityPercentiles = pgTable("personality_percentiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  personalityType: text("personality_type").notNull(),
+  percentile: real("percentile").notNull(), // 0-100 percentile rank
+  scoreHistory: jsonb("score_history"), // Historical scores for trending
+  lastCalculated: timestamp("last_calculated").defaultNow(),
+});
+
 export const personalityAnalysis = pgTable("personality_analysis", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
@@ -61,6 +82,8 @@ export const personalityAnalysis = pgTable("personality_analysis", {
   previousPersonality: text("previous_personality"),
   updatedPersonality: text("updated_personality"),
   reasoning: text("reasoning"), // AI explanation for personality update
+  percentileChanges: jsonb("percentile_changes"), // Before/after percentiles
+  opportunityPatterns: jsonb("opportunity_patterns"), // Analyzed opportunity preferences
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -92,6 +115,16 @@ export const insertTeamInteractionSchema = createInsertSchema(teamInteractions).
   timestamp: true,
 });
 
+export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertPersonalityPercentileSchema = createInsertSchema(personalityPercentiles).omit({
+  id: true,
+  lastCalculated: true,
+});
+
 export const insertPersonalityAnalysisSchema = createInsertSchema(personalityAnalysis).omit({
   id: true,
   createdAt: true,
@@ -103,4 +136,6 @@ export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
 export type Achievement = typeof achievements.$inferSelect;
 export type TeamInteraction = typeof teamInteractions.$inferSelect;
+export type Opportunity = typeof opportunities.$inferSelect;
+export type PersonalityPercentile = typeof personalityPercentiles.$inferSelect;
 export type PersonalityAnalysis = typeof personalityAnalysis.$inferSelect;

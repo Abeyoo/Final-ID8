@@ -6,7 +6,9 @@ import {
   goals, 
   achievements, 
   teamInteractions, 
-  personalityAnalysis 
+  personalityAnalysis,
+  opportunities,
+  personalityPercentiles
 } from "@shared/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 
@@ -27,6 +29,7 @@ interface BehaviorData {
   goals: any[];
   achievements: any[];
   teamInteractions: any[];
+  opportunities: any[];
   currentPersonality: string | null;
 }
 
@@ -90,11 +93,21 @@ export class PersonalityAnalysisService {
         gte(teamInteractions.timestamp, thirtyDaysAgo)
       ));
 
+    // Get opportunity interactions
+    const opportunityData = await db
+      .select()
+      .from(opportunities)
+      .where(and(
+        eq(opportunities.userId, userId),
+        gte(opportunities.timestamp, thirtyDaysAgo)
+      ));
+
     return {
       assessmentResponses: assessmentData,
       goals: goalsData,
       achievements: achievementsData,
       teamInteractions: teamData,
+      opportunities: opportunityData,
       currentPersonality: user?.personalityType || null
     };
   }
@@ -214,6 +227,30 @@ export class PersonalityAnalysisService {
       prompt += `- Action types: ${Object.entries(actionTypes).map(([action, count]) => `${action}(${count})`).join(', ')}\n\n`;
     }
 
+    // Opportunity preferences analysis
+    if (behaviorData.opportunities.length > 0) {
+      const opportunityCategories = behaviorData.opportunities.reduce((acc, opp) => {
+        acc[opp.category] = (acc[opp.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const opportunityTypes = behaviorData.opportunities.reduce((acc, opp) => {
+        acc[opp.opportunityType] = (acc[opp.opportunityType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const actionTypes = behaviorData.opportunities.reduce((acc, opp) => {
+        acc[opp.actionType] = (acc[opp.actionType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      prompt += `Opportunity Preferences:\n`;
+      prompt += `- Total interactions: ${behaviorData.opportunities.length}\n`;
+      prompt += `- Categories: ${Object.entries(opportunityCategories).map(([cat, count]) => `${cat}(${count})`).join(', ')}\n`;
+      prompt += `- Types: ${Object.entries(opportunityTypes).map(([type, count]) => `${type}(${count})`).join(', ')}\n`;
+      prompt += `- Actions: ${Object.entries(actionTypes).map(([action, count]) => `${action}(${count})`).join(', ')}\n\n`;
+    }
+
     prompt += `Based on this data, determine:
 1. The most fitting personality type from the 6 categories
 2. Confidence scores for each personality type (must sum to 1.0)
@@ -283,6 +320,9 @@ export class PersonalityAnalysisService {
     analysis: any, 
     previousPersonality: string | null
   ): Promise<void> {
+    // Calculate percentiles for this user
+    const percentiles = await this.calculatePersonalityPercentiles(userId, analysis.personalityScores);
+    
     await db.insert(personalityAnalysis).values({
       userId,
       analysisData: {
@@ -295,7 +335,8 @@ export class PersonalityAnalysisService {
       confidence: analysis.confidence,
       previousPersonality,
       updatedPersonality: analysis.updatedPersonality,
-      reasoning: analysis.reasoning
+      reasoning: analysis.reasoning,
+      percentileChanges: percentiles
     });
 
     // Update user's personality
@@ -306,6 +347,105 @@ export class PersonalityAnalysisService {
         updatedAt: new Date()
       })
       .where(eq(users.id, userId));
+
+    // Store/update percentiles
+    await this.updatePersonalityPercentiles(userId, analysis.personalityScores, percentiles);
+  }
+
+  private async calculatePersonalityPercentiles(userId: number, userScores: PersonalityScores): Promise<Record<string, number>> {
+    const percentiles: Record<string, number> = {};
+    
+    // Get all users' personality scores for comparison
+    const allUsers = await db.select({
+      personalityScores: users.personalityScores
+    }).from(users).where(eq(users.personalityScores, null));
+
+    const allScores: Record<string, number[]> = {
+      Leader: [],
+      Innovator: [],
+      Collaborator: [],
+      Perfectionist: [],
+      Explorer: [],
+      Mediator: []
+    };
+
+    // Collect all scores for each personality type
+    allUsers.forEach(user => {
+      if (user.personalityScores) {
+        const scores = user.personalityScores as PersonalityScores;
+        Object.keys(allScores).forEach(type => {
+          if (scores[type as keyof PersonalityScores] !== undefined) {
+            allScores[type].push(scores[type as keyof PersonalityScores]);
+          }
+        });
+      }
+    });
+
+    // Calculate percentile for each personality type
+    Object.keys(userScores).forEach(type => {
+      const userScore = userScores[type as keyof PersonalityScores];
+      const allTypeScores = allScores[type];
+      
+      if (allTypeScores.length > 0) {
+        const sortedScores = allTypeScores.sort((a, b) => a - b);
+        const rank = sortedScores.filter(score => score < userScore).length;
+        percentiles[type] = Math.round((rank / sortedScores.length) * 100);
+      } else {
+        percentiles[type] = 50; // Default to 50th percentile if no data
+      }
+    });
+
+    return percentiles;
+  }
+
+  private async updatePersonalityPercentiles(userId: number, scores: PersonalityScores, percentiles: Record<string, number>): Promise<void> {
+    for (const [personalityType, score] of Object.entries(scores)) {
+      // Get existing percentile record
+      const [existing] = await db
+        .select()
+        .from(personalityPercentiles)
+        .where(and(
+          eq(personalityPercentiles.userId, userId),
+          eq(personalityPercentiles.personalityType, personalityType)
+        ));
+
+      const currentPercentile = percentiles[personalityType] || 50;
+      
+      if (existing) {
+        // Update existing record with new percentile and score history
+        const scoreHistory = existing.scoreHistory as any[] || [];
+        scoreHistory.push({
+          score,
+          percentile: currentPercentile,
+          timestamp: new Date().toISOString()
+        });
+
+        // Keep only last 30 entries
+        if (scoreHistory.length > 30) {
+          scoreHistory.splice(0, scoreHistory.length - 30);
+        }
+
+        await db.update(personalityPercentiles)
+          .set({
+            percentile: currentPercentile,
+            scoreHistory,
+            lastCalculated: new Date()
+          })
+          .where(eq(personalityPercentiles.id, existing.id));
+      } else {
+        // Create new percentile record
+        await db.insert(personalityPercentiles).values({
+          userId,
+          personalityType,
+          percentile: currentPercentile,
+          scoreHistory: [{
+            score,
+            percentile: currentPercentile,
+            timestamp: new Date().toISOString()
+          }]
+        });
+      }
+    }
   }
 
   // Method to track behavioral data
@@ -353,6 +493,59 @@ export class PersonalityAnalysisService {
       actionType,
       actionData
     });
+  }
+
+  async trackOpportunityInteraction(
+    userId: number, 
+    opportunityType: string, 
+    category: string, 
+    title: string, 
+    actionType: string,
+    interactionData?: any
+  ): Promise<void> {
+    await db.insert(opportunities).values({
+      userId,
+      opportunityType,
+      category,
+      title,
+      description: interactionData?.description || '',
+      actionType,
+      interactionData
+    });
+  }
+
+  // Get user's percentile rankings
+  async getUserPercentiles(userId: number): Promise<Record<string, any>> {
+    const percentiles = await db
+      .select()
+      .from(personalityPercentiles)
+      .where(eq(personalityPercentiles.userId, userId));
+
+    const result: Record<string, any> = {};
+    percentiles.forEach(p => {
+      result[p.personalityType] = {
+        percentile: p.percentile,
+        scoreHistory: p.scoreHistory,
+        lastCalculated: p.lastCalculated
+      };
+    });
+
+    return result;
+  }
+
+  // Batch update percentiles for all users when new data is available
+  async recalculateAllPercentiles(): Promise<void> {
+    const allUsers = await db.select({
+      id: users.id,
+      personalityScores: users.personalityScores
+    }).from(users);
+
+    for (const user of allUsers) {
+      if (user.personalityScores) {
+        const percentiles = await this.calculatePersonalityPercentiles(user.id, user.personalityScores as PersonalityScores);
+        await this.updatePersonalityPercentiles(user.id, user.personalityScores as PersonalityScores, percentiles);
+      }
+    }
   }
 }
 

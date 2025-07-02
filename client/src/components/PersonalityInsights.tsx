@@ -13,12 +13,26 @@ interface PersonalityData {
   reasoning?: string;
 }
 
+interface PercentileData {
+  [personalityType: string]: {
+    percentile: number;
+    scoreHistory: Array<{
+      score: number;
+      percentile: number;
+      timestamp: string;
+    }>;
+    lastCalculated: string;
+  };
+}
+
 const PersonalityInsights: React.FC<PersonalityInsightsProps> = ({ userId }) => {
   const [personalityData, setPersonalityData] = useState<PersonalityData | null>(null);
+  const [percentileData, setPercentileData] = useState<PercentileData>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     fetchPersonalityData();
+    fetchPercentileData();
   }, [userId]);
 
   const fetchPersonalityData = async () => {
@@ -30,6 +44,18 @@ const PersonalityInsights: React.FC<PersonalityInsightsProps> = ({ userId }) => 
       }
     } catch (error) {
       console.error('Failed to fetch personality data:', error);
+    }
+  };
+
+  const fetchPercentileData = async () => {
+    try {
+      const response = await fetch(`/api/personality/${userId}/percentiles`);
+      if (response.ok) {
+        const data = await response.json();
+        setPercentileData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch percentile data:', error);
     }
   };
 
@@ -139,12 +165,20 @@ const PersonalityInsights: React.FC<PersonalityInsightsProps> = ({ userId }) => 
           {personalityData.personalityScores && Object.entries(personalityData.personalityScores).map(([type, score]) => {
             const typeInfo = personalityDescriptions[type as keyof typeof personalityDescriptions];
             const percentage = Math.round((score as number) * 100);
+            const percentileInfo = percentileData[type];
             
             return (
               <div key={type} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-700">{type}</span>
-                  <span className="text-sm font-semibold text-gray-900">{percentage}%</span>
+                  <div className="text-right">
+                    <span className="text-sm font-semibold text-gray-900">{percentage}%</span>
+                    {percentileInfo && (
+                      <div className="text-xs text-gray-500">
+                        {percentileInfo.percentile}th percentile
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -152,6 +186,11 @@ const PersonalityInsights: React.FC<PersonalityInsightsProps> = ({ userId }) => 
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
+                {percentileInfo && (
+                  <div className="text-xs text-gray-500">
+                    You score higher than {percentileInfo.percentile}% of students
+                  </div>
+                )}
               </div>
             );
           })}
