@@ -244,7 +244,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
         {/* Progress Bar */}
         <div className="bg-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Welcome to ID8</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Welcome to Thinkle</h1>
             <div className="flex items-center space-x-4">
               {onBackToSignIn && (
                 <button
@@ -281,7 +281,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
           {currentStep === 0 && (
             <div className="text-center">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Role</h2>
-              <p className="text-gray-600 mb-8">How would you like to use ID8?</p>
+              <p className="text-gray-600 mb-8">How would you like to use Thinkle?</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                 <button

@@ -1,4 +1,4 @@
-# Skill Link Student Development Platform
+# Thinkle Student Development Platform
 
 ## Overview
 A comprehensive student development platform that helps students with career assessment, skill development, team collaboration, and opportunities discovery. The platform features a modern React frontend with Express backend, designed for high school students to explore their potential and connect with peers.

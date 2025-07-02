@@ -18,7 +18,7 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
 
   // Load saved accounts on component mount
   useEffect(() => {
-    const accounts = JSON.parse(localStorage.getItem('id8_accounts') || '[]');
+    const accounts = JSON.parse(localStorage.getItem('thinkle_accounts') || '[]');
     setSavedAccounts(accounts);
   }, []);
 
@@ -97,7 +97,7 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
             <User size={32} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Welcome Back!</h1>
-          <p className="text-purple-100">Sign in to continue your journey with Skill Link</p>
+          <p className="text-purple-100">Sign in to continue your journey with Thinkle</p>
         </div>
 
         {/* Form */}
@@ -270,7 +270,7 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
 
           {/* New User Link */}
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-            <p className="text-gray-600 text-sm mb-3">New to Skill Link?</p>
+            <p className="text-gray-600 text-sm mb-3">New to Thinkle?</p>
             <button
               onClick={onGoToOnboarding}
               className="text-purple-600 font-medium hover:text-purple-700 transition-colors"

@@ -27,8 +27,8 @@ function App() {
 
   // Check localStorage for previous onboarding completion
   useEffect(() => {
-    const onboardingCompleted = localStorage.getItem('id8_onboarding_completed');
-    const savedProfile = localStorage.getItem('id8_user_profile');
+    const onboardingCompleted = localStorage.getItem('thinkle_onboarding_completed');
+    const savedProfile = localStorage.getItem('thinkle_user_profile');
     
     if (onboardingCompleted === 'true') {
       setIsOnboarded(true);
@@ -47,14 +47,14 @@ function App() {
   // Save onboarding status to localStorage
   useEffect(() => {
     if (isOnboarded) {
-      localStorage.setItem('id8_onboarding_completed', 'true');
+      localStorage.setItem('thinkle_onboarding_completed', 'true');
     }
   }, [isOnboarded]);
 
   // Save user profile to localStorage
   useEffect(() => {
     if (userProfile) {
-      localStorage.setItem('id8_user_profile', JSON.stringify(userProfile));
+      localStorage.setItem('thinkle_user_profile', JSON.stringify(userProfile));
     }
   }, [userProfile]);
 

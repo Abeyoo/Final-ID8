@@ -90,7 +90,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
 
       if (response.ok) {
         // Save credentials for easy return access
-        const savedAccounts = JSON.parse(localStorage.getItem('id8_accounts') || '[]');
+        const savedAccounts = JSON.parse(localStorage.getItem('thinkle_accounts') || '[]');
         const newAccount = {
           name: formData.name,
           email: formData.email,
@@ -103,7 +103,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
         // Add to saved accounts if not already exists
         if (!savedAccounts.find((acc: any) => acc.email === formData.email)) {
           savedAccounts.push(newAccount);
-          localStorage.setItem('id8_accounts', JSON.stringify(savedAccounts));
+          localStorage.setItem('thinkle_accounts', JSON.stringify(savedAccounts));
         }
 
         const newUserProfile = {
@@ -143,7 +143,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
           <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
             <UserPlus size={32} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Join ID8</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Join Thinkle</h1>
           <p className="text-purple-100">Create your account and start your journey</p>
         </div>
 
