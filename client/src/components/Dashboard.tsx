@@ -7,10 +7,30 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const stats = [
-    { label: 'Completed Assessments', value: '5', icon: BookOpen, color: 'from-purple-500 to-purple-600' },
-    { label: 'Active Goals', value: '8', icon: Target, color: 'from-blue-500 to-blue-600' },
-    { label: 'Team Projects', value: '3', icon: Users, color: 'from-green-500 to-green-600' },
-    { label: 'Achievements', value: '12', icon: Trophy, color: 'from-orange-500 to-orange-600' },
+    { 
+      label: 'Completed Assessments', 
+      value: userProfile?.completedAssessments?.toString() || '0', 
+      icon: BookOpen, 
+      color: 'from-purple-500 to-purple-600' 
+    },
+    { 
+      label: 'Active Goals', 
+      value: userProfile?.activeGoals?.toString() || '0', 
+      icon: Target, 
+      color: 'from-blue-500 to-blue-600' 
+    },
+    { 
+      label: 'Team Projects', 
+      value: userProfile?.teamProjects?.toString() || '0', 
+      icon: Users, 
+      color: 'from-green-500 to-green-600' 
+    },
+    { 
+      label: 'Achievements', 
+      value: userProfile?.achievements?.toString() || '0', 
+      icon: Trophy, 
+      color: 'from-orange-500 to-orange-600' 
+    },
   ];
 
   const recentActivities = [

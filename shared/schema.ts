@@ -92,6 +92,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   name: true,
   email: true,
+  personalityType: true,
+  personalityScores: true,
 });
 
 export const insertAssessmentResponseSchema = createInsertSchema(assessmentResponses).omit({

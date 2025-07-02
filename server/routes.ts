@@ -2,8 +2,103 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { personalityAI } from "./personalityAI";
+import { db } from "./db";
+import { assessmentResponses, goals, achievements, teamInteractions } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication Routes
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { name, email, password, school, grade } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(email);
+      if (existingUser) {
+        return res.status(400).json({ error: 'User already exists' });
+      }
+      
+      // Create new user with initial empty state
+      const newUser = await storage.createUser({
+        username: email,
+        password, // In production, hash this password
+        name,
+        email,
+        personalityType: null,
+        personalityScores: null
+      });
+      
+      res.json({ 
+        success: true, 
+        user: { 
+          id: newUser.id, 
+          name: newUser.name, 
+          email: newUser.email,
+          completedAssessments: 0,
+          activeGoals: 0,
+          teamProjects: 0,
+          achievements: 0
+        } 
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+      res.status(500).json({ error: 'Failed to create user' });
+    }
+  });
+
+  app.post("/api/auth/signin", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const user = await storage.getUserByUsername(email);
+      if (!user || user.password !== password) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      // Get user stats
+      const stats = await getUserStats(user.id);
+      
+      res.json({ 
+        success: true, 
+        user: { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email,
+          personalityType: user.personalityType,
+          ...stats
+        } 
+      });
+    } catch (error) {
+      console.error('Signin error:', error);
+      res.status(500).json({ error: 'Failed to sign in' });
+    }
+  });
+
+  // Helper function to get user stats
+  async function getUserStats(userId: number) {
+    try {
+      const [assessmentCount] = await db.select({ count: sql`count(*)` }).from(assessmentResponses).where(eq(assessmentResponses.userId, userId));
+      const [goalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(eq(goals.userId, userId));
+      const [achievementCount] = await db.select({ count: sql`count(*)` }).from(achievements).where(eq(achievements.userId, userId));
+      const [teamCount] = await db.select({ count: sql`count(distinct team_id)` }).from(teamInteractions).where(eq(teamInteractions.userId, userId));
+      
+      return {
+        completedAssessments: Number(assessmentCount.count),
+        activeGoals: Number(goalCount.count),
+        teamProjects: Number(teamCount.count),
+        achievements: Number(achievementCount.count)
+      };
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      return {
+        completedAssessments: 0,
+        activeGoals: 0,
+        teamProjects: 0,
+        achievements: 0
+      };
+    }
+  }
+
   // Personality Analysis Routes
   
   // Track assessment response and trigger personality analysis

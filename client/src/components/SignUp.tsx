@@ -47,22 +47,49 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const newUserProfile = {
-        name: formData.name,
-        email: formData.email,
-        school: formData.school,
-        grade: formData.grade,
-        age: '', // Will be filled in onboarding
-        interests: [],
-        personalityType: '',
-        role: 'student'
-      };
-      
-      onSignUp(newUserProfile);
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          school: formData.school,
+          grade: formData.grade
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const newUserProfile = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          school: formData.school,
+          grade: formData.grade,
+          age: '', // Will be filled in onboarding
+          interests: [],
+          personalityType: '',
+          role: 'student',
+          completedAssessments: data.user.completedAssessments,
+          activeGoals: data.user.activeGoals,
+          teamProjects: data.user.teamProjects,
+          achievements: data.user.achievements
+        };
+        
+        onSignUp(newUserProfile);
+      } else {
+        setError(data.error || 'Failed to create account');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const isFormValid = formData.name && formData.email && formData.password && 
