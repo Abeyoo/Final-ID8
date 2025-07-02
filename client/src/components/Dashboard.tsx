@@ -122,11 +122,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
         const strengthNames = personalityInsights[type as keyof typeof personalityInsights]?.strengths || [type];
         const primaryStrength = strengthNames[0] || type;
         
-        // Convert AI score (0-1) to percentage and add percentile bonus
-        const baseProgress = Math.round(score * 100);
-        const percentileBonus = percentileData[type]?.percentile ? Math.round(percentileData[type].percentile * 0.1) : 0;
+        // Convert AI score (0-1) to mastery percentage  
+        const masteryPercentage = Math.round(score * 100);
+        // Add small bonus for user engagement
         const activityBonus = Math.min(5, (userProfile?.completedAssessments || 0));
-        const finalProgress = Math.min(100, baseProgress + percentileBonus + activityBonus);
+        const finalProgress = Math.min(100, masteryPercentage + activityBonus);
         
         return {
           name: primaryStrength,
@@ -319,20 +319,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                       </p>
                       {strength.percentile > 0 && (
                         <p className="text-xs text-blue-600 mt-1">
-                          Top {100 - strength.percentile}% of students
+                          Better than {strength.percentile}% of students
                         </p>
                       )}
                     </div>
                     <div className="ml-3 text-right">
                       <span className="text-sm font-bold text-gray-900">{strength.progress}%</span>
-                      <div className="text-xs text-gray-500">
-                        {personalityData?.personalityScores ? 'AI-powered' : 'estimated'}
-                      </div>
-                      {strength.aiScore && (
-                        <div className="text-xs text-purple-600">
-                          Score: {(strength.aiScore * 100).toFixed(0)}%
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500">mastery level</div>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
@@ -346,33 +339,24 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
             )}
           </div>
           <div className="mt-6 pt-4 border-t border-gray-100">
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>High confidence</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span>Medium confidence</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span>Low confidence</span>
-                </div>
+            <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>High confidence</span>
               </div>
-              <div className="text-right">
-                {personalityData?.personalityScores ? (
-                  <span className="text-purple-600 font-medium">AI-Powered Analysis</span>
-                ) : (
-                  <span>Estimated from personality type</span>
-                )}
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span>Medium confidence</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Low confidence</span>
               </div>
             </div>
             <p className="text-xs text-gray-500 text-center mt-2">
-              {personalityData?.lastUpdated ? 
-                `Last updated: ${new Date(personalityData.lastUpdated).toLocaleDateString()}` :
-                'Complete assessments to unlock AI-powered strength analysis'
+              {personalityData?.personalityScores ? 
+                `AI analysis • Last updated: ${new Date(personalityData.lastUpdated).toLocaleDateString()}` :
+                'Complete assessments for personalized strength analysis'
               }
             </p>
           </div>
