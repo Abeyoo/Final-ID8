@@ -579,7 +579,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
                 <Star size={48} className="text-white" />
               </div>
               
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to ID8!</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Thinkle!</h2>
               <p className="text-gray-600 mb-8">Your profile is complete. Here's what we discovered about you:</p>
               
               <div className="max-w-2xl mx-auto bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 mb-8">

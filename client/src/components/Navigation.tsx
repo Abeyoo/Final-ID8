@@ -62,7 +62,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              ID8
+              Thinkle
             </h1>
             <p className="text-sm text-gray-600 mt-1">Discover Your Potential</p>
           </div>
