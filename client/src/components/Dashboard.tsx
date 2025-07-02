@@ -70,13 +70,31 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     },
   ];
 
-  const recentActivities = [
-    { action: 'Completed Personality Assessment', time: '2 hours ago', type: 'assessment' },
-    { action: 'Joined Robotics Team', time: '1 day ago', type: 'team' },
-    { action: 'Earned Leadership Badge', time: '3 days ago', type: 'achievement' },
-    { action: 'Set new goal: Public Speaking', time: '1 week ago', type: 'goal' },
-    { action: 'Connected with mentor Sarah Chen', time: '1 week ago', type: 'community' },
-  ];
+  // Generate recent activities based on actual user data
+  const getRecentActivities = () => {
+    const activities = [];
+    
+    // Only show activities if user has actually done things
+    if (userProfile?.completedAssessments > 0) {
+      activities.push({ action: 'Completed Personality Assessment', time: '2 hours ago', type: 'assessment' });
+    }
+    
+    if (userProfile?.teamProjects > 0) {
+      activities.push({ action: 'Joined Robotics Team', time: '1 day ago', type: 'team' });
+    }
+    
+    if (userProfile?.achievements > 0) {
+      activities.push({ action: 'Earned Leadership Badge', time: '3 days ago', type: 'achievement' });
+    }
+    
+    if (userProfile?.activeGoals > 0) {
+      activities.push({ action: 'Set new goal: Public Speaking', time: '1 week ago', type: 'goal' });
+    }
+    
+    return activities;
+  };
+
+  const recentActivities = getRecentActivities();
 
   const personalityInsights = {
     Leader: {
@@ -218,11 +236,27 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const personalityType = userProfile?.personalityType || personalityData?.personalityType || 'Leader';
   const strengthsProgress = getStrengthsFromAI();
 
-  const upcomingDeadlines = [
-    { title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' },
-    { title: 'Leadership Workshop Application', date: '2024-04-01', type: 'opportunity', priority: 'medium' },
-    { title: 'Team Meeting - Drama Club', date: '2024-02-25', type: 'meeting', priority: 'low' },
-  ];
+  // Generate upcoming deadlines based on user activity
+  const getUpcomingDeadlines = () => {
+    const deadlines = [];
+    
+    // Only show deadlines if user has active projects or goals
+    if (userProfile?.activeGoals > 2) {
+      deadlines.push({ title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' });
+    }
+    
+    if (userProfile?.completedAssessments > 2) {
+      deadlines.push({ title: 'Leadership Workshop Application', date: '2024-04-01', type: 'opportunity', priority: 'medium' });
+    }
+    
+    if (userProfile?.teamProjects > 0) {
+      deadlines.push({ title: 'Team Meeting - Drama Club', date: '2024-02-25', type: 'meeting', priority: 'low' });
+    }
+    
+    return deadlines;
+  };
+
+  const upcomingDeadlines = getUpcomingDeadlines();
 
   const personalityInsight = {
     type: personalityType,
@@ -395,20 +429,32 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h2>
           <div className="space-y-4">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className={`w-2 h-2 rounded-full mt-2 ${
-                  activity.type === 'assessment' ? 'bg-purple-500' :
-                  activity.type === 'team' ? 'bg-green-500' :
-                  activity.type === 'achievement' ? 'bg-orange-500' :
-                  activity.type === 'goal' ? 'bg-blue-500' : 'bg-gray-500'
-                }`}></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-start space-x-3">
+                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                    activity.type === 'assessment' ? 'bg-purple-500' :
+                    activity.type === 'team' ? 'bg-green-500' :
+                    activity.type === 'achievement' ? 'bg-orange-500' :
+                    activity.type === 'goal' ? 'bg-blue-500' : 'bg-gray-500'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                    <p className="text-xs text-gray-500">{activity.time}</p>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar size={24} className="text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-500 mb-2">No recent activity yet</p>
+                <p className="text-xs text-gray-400">
+                  Start by taking an assessment or setting a goal to see your activity here
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -419,24 +465,36 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
             <Calendar size={20} className="text-blue-500" />
           </div>
           <div className="space-y-4">
-            {upcomingDeadlines.map((deadline, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    deadline.priority === 'high' ? 'bg-red-500' :
-                    deadline.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                  }`}></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{deadline.title}</p>
-                    <p className="text-xs text-gray-500 capitalize">{deadline.type}</p>
+            {upcomingDeadlines.length > 0 ? (
+              upcomingDeadlines.map((deadline, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      deadline.priority === 'high' ? 'bg-red-500' :
+                      deadline.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    }`}></div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{deadline.title}</p>
+                      <p className="text-xs text-gray-500 capitalize">{deadline.type}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-gray-500">
+                    <Clock size={14} className="mr-1" />
+                    <span className="text-xs">{new Date(deadline.date).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <div className="flex items-center text-gray-500">
-                  <Clock size={14} className="mr-1" />
-                  <span className="text-xs">{new Date(deadline.date).toLocaleDateString()}</span>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock size={24} className="text-gray-400" />
                 </div>
+                <p className="text-sm text-gray-500 mb-2">No upcoming deadlines</p>
+                <p className="text-xs text-gray-400">
+                  Join teams and set goals to track important dates and deadlines
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
