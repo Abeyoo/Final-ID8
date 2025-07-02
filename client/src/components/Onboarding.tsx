@@ -16,9 +16,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
     grade: '',
     email: '',
     emailVerified: false,
-    interests: [],
+    interests: [] as string[],
     personalityType: '',
-    strengths: [],
+    strengths: [] as string[],
     parentalConsent: false
   });
 
@@ -56,7 +56,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
         { text: "Take charge and organize the team", type: "Leader" },
         { text: "Come up with creative solutions", type: "Innovator" },
         { text: "Support others and ensure harmony", type: "Collaborator" },
-        { text: "Focus on details and quality", type: "Perfectionist" }
+        { text: "Focus on details and quality", type: "Perfectionist" },
+        { text: "Explore new ideas and possibilities", type: "Explorer" },
+        { text: "Help resolve conflicts and build bridges", type: "Mediator" }
       ]
     },
     {
@@ -65,7 +67,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
         { text: "Break it down into logical steps", type: "Analyst" },
         { text: "Look for creative alternatives", type: "Innovator" },
         { text: "Seek advice from others", type: "Collaborator" },
-        { text: "Push through with determination", type: "Leader" }
+        { text: "Push through with determination", type: "Leader" },
+        { text: "Research all possible approaches", type: "Explorer" },
+        { text: "Find common ground between different viewpoints", type: "Mediator" }
       ]
     },
     {
@@ -74,7 +78,31 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
         { text: "Working with a team", type: "Collaborator" },
         { text: "Solving complex problems", type: "Analyst" },
         { text: "Creating something new", type: "Innovator" },
-        { text: "Achieving ambitious goals", type: "Leader" }
+        { text: "Achieving ambitious goals", type: "Leader" },
+        { text: "Learning and discovering new things", type: "Explorer" },
+        { text: "Helping others resolve differences", type: "Mediator" }
+      ]
+    },
+    {
+      question: "Your friends would describe you as:",
+      options: [
+        { text: "The natural leader who takes initiative", type: "Leader" },
+        { text: "The creative thinker with unique ideas", type: "Innovator" },
+        { text: "The supportive friend who brings people together", type: "Collaborator" },
+        { text: "The reliable person who pays attention to details", type: "Perfectionist" },
+        { text: "The curious one who loves learning new things", type: "Explorer" },
+        { text: "The peacemaker who helps resolve conflicts", type: "Mediator" }
+      ]
+    },
+    {
+      question: "In your free time, you enjoy:",
+      options: [
+        { text: "Organizing events or leading activities", type: "Leader" },
+        { text: "Art, music, or creative hobbies", type: "Innovator" },
+        { text: "Spending quality time with friends and family", type: "Collaborator" },
+        { text: "Perfecting skills or organizing your space", type: "Perfectionist" },
+        { text: "Reading, researching, or trying new experiences", type: "Explorer" },
+        { text: "Volunteering or helping others with their problems", type: "Mediator" }
       ]
     }
   ];

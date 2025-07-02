@@ -35,11 +35,43 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     { title: 'Team Meeting - Drama Club', date: '2024-02-25', type: 'meeting', priority: 'low' },
   ];
 
+  const personalityInsights = {
+    Leader: {
+      description: 'Natural born leader who takes initiative and inspires others to achieve common goals',
+      strengths: ['Takes charge', 'Motivates others', 'Strategic thinking', 'Decision making'],
+      growthAreas: ['Delegation', 'Patience', 'Active listening', 'Flexibility']
+    },
+    Innovator: {
+      description: 'Creative visionary who brings fresh perspectives and generates original solutions',
+      strengths: ['Creative thinking', 'Problem solving', 'Adaptability', 'Future-focused'],
+      growthAreas: ['Implementation', 'Detail focus', 'Routine tasks', 'Practical constraints']
+    },
+    Collaborator: {
+      description: 'Team-oriented individual who builds bridges and fosters positive relationships',
+      strengths: ['Team building', 'Communication', 'Empathy', 'Conflict resolution'],
+      growthAreas: ['Assertiveness', 'Independent work', 'Difficult decisions', 'Self-advocacy']
+    },
+    Perfectionist: {
+      description: 'Detail-oriented achiever who maintains high standards and ensures quality results',
+      strengths: ['Attention to detail', 'Quality focus', 'Organization', 'Reliability'],
+      growthAreas: ['Time management', 'Flexibility', 'Risk taking', 'Delegation']
+    },
+    Explorer: {
+      description: 'Curious learner who seeks new experiences and knowledge across diverse domains',
+      strengths: ['Learning agility', 'Curiosity', 'Research skills', 'Open-mindedness'],
+      growthAreas: ['Focus', 'Depth over breadth', 'Follow-through', 'Specialization']
+    },
+    Mediator: {
+      description: 'Diplomatic peacemaker who helps others find common ground and resolve differences',
+      strengths: ['Conflict resolution', 'Diplomacy', 'Understanding', 'Bridge building'],
+      growthAreas: ['Assertiveness', 'Taking sides', 'Direct confrontation', 'Personal boundaries']
+    }
+  };
+
+  const personalityType = userProfile?.personalityType || 'Leader';
   const personalityInsight = {
-    type: userProfile?.personalityType || 'Leader',
-    description: 'Natural born leader who takes initiative and inspires others',
-    strengths: ['Takes charge', 'Motivates others', 'Strategic thinking'],
-    growthAreas: ['Delegation', 'Patience', 'Active listening']
+    type: personalityType,
+    ...personalityInsights[personalityType as keyof typeof personalityInsights]
   };
 
   return (
