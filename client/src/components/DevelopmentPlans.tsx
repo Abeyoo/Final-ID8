@@ -98,6 +98,23 @@ const DevelopmentPlans: React.FC = () => {
           // Hide confetti after 3 seconds
           setTimeout(() => setShowConfetti(false), 3000);
           
+          // Track goal completion with AI personality analysis
+          fetch(`/api/goals/${goal.id}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: 1 }) // TODO: Get from user context
+          }).then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+          }).then(result => {
+            if (result?.personalityUpdate) {
+              console.log('Personality updated after goal completion:', result.personalityUpdate);
+            }
+          }).catch(error => {
+            console.error('Failed to track goal completion:', error);
+          });
+          
           // Hide the goal by setting status to completed
           return {
             ...goal,
@@ -117,7 +134,7 @@ const DevelopmentPlans: React.FC = () => {
     }));
   };
 
-  const handleCreateGoal = (e: React.FormEvent) => {
+  const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newGoalForm.title.trim() || !newGoalForm.description.trim() || !newGoalForm.deadline) {
@@ -151,6 +168,28 @@ const DevelopmentPlans: React.FC = () => {
     };
 
     setGoals(prev => [...prev, newGoal]);
+    
+    // Track goal creation with AI personality analysis
+    try {
+      const response = await fetch('/api/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 1, // TODO: Get from user context
+          title: newGoalForm.title,
+          description: newGoalForm.description,
+          category: newGoalForm.category
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Personality updated after goal creation:', result.personalityUpdate);
+      }
+    } catch (error) {
+      console.error('Failed to track goal creation:', error);
+    }
+
     setNewGoalForm({
       title: '',
       description: '',

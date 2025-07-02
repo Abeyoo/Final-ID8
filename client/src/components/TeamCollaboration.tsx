@@ -113,7 +113,7 @@ const TeamCollaboration: React.FC = () => {
     }
   };
 
-  const handleCreateTeam = (e: React.FormEvent) => {
+  const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newTeamForm.name.trim() || !newTeamForm.description.trim()) {
@@ -137,6 +137,32 @@ const TeamCollaboration: React.FC = () => {
     };
 
     setTeams(prev => [...prev, newTeam]);
+    
+    // Track team creation with AI personality analysis
+    try {
+      const response = await fetch(`/api/teams/${newTeam.id}/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 1, // TODO: Get from user context
+          actionType: 'created_team',
+          actionData: {
+            teamName: newTeam.name,
+            category: newTeam.category,
+            skills: skills,
+            isLeader: true
+          }
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Personality updated after team creation:', result.personalityUpdate);
+      }
+    } catch (error) {
+      console.error('Failed to track team creation:', error);
+    }
+
     setNewTeamForm({
       name: '',
       description: '',
@@ -161,10 +187,12 @@ const TeamCollaboration: React.FC = () => {
     }
   };
 
-  const submitProgressUpdate = (e: React.FormEvent) => {
+  const submitProgressUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (selectedTeamId === null) return;
+
+    const oldProgress = teams.find(t => t.id === selectedTeamId)?.progress || 0;
 
     setTeams(prev => prev.map(team => {
       if (team.id === selectedTeamId) {
@@ -176,6 +204,32 @@ const TeamCollaboration: React.FC = () => {
       }
       return team;
     }));
+
+    // Track progress update with AI personality analysis
+    try {
+      const response = await fetch(`/api/teams/${selectedTeamId}/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 1, // TODO: Get from user context
+          actionType: 'updated_progress',
+          actionData: {
+            oldProgress,
+            newProgress: progressUpdate.newProgress,
+            milestone: progressUpdate.milestone,
+            notes: progressUpdate.updateNote,
+            isLeaderAction: true
+          }
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Personality updated after progress update:', result.personalityUpdate);
+      }
+    } catch (error) {
+      console.error('Failed to track progress update:', error);
+    }
 
     // Reset form and close modal
     setProgressUpdate({

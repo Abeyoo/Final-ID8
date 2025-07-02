@@ -174,10 +174,26 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
     }));
   };
 
-  const handlePersonalityAnswer = (questionIndex: number, type: string) => {
+  const handlePersonalityAnswer = async (questionIndex: number, type: string) => {
     const newAnswers = [...personalityAnswers];
     newAnswers[questionIndex] = type;
     setPersonalityAnswers(newAnswers);
+    
+    // Track assessment response with AI personality analysis
+    try {
+      await fetch('/api/assessment/response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 1, // TODO: Get from user context
+          assessmentType: 'personality',
+          questionId: `onboarding_q${questionIndex}`,
+          response: type
+        })
+      });
+    } catch (error) {
+      console.error('Failed to track assessment response:', error);
+    }
   };
 
   const calculatePersonalityType = () => {
