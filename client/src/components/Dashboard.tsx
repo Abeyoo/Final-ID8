@@ -74,7 +74,19 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const getRecentActivities = () => {
     const activities = [];
     
-    // Only show activities if user has actually done things
+    // Demo account gets rich activity history
+    if (userProfile?.email === 'john.doe@lincolnhs.org') {
+      return [
+        { action: 'Completed Strengths Assessment', time: '2 hours ago', type: 'assessment' },
+        { action: 'Updated Science Fair Project progress to 85%', time: '5 hours ago', type: 'goal' },
+        { action: 'Earned "Peer Mentor" achievement', time: '2 days ago', type: 'achievement' },
+        { action: 'Applied to National Science Fair Competition', time: '3 days ago', type: 'opportunity' },
+        { action: 'Led Robotics Club strategy meeting', time: '1 week ago', type: 'team' },
+        { action: 'Completed Python Programming milestone', time: '1 week ago', type: 'goal' }
+      ];
+    }
+    
+    // Regular logic for other users
     if (userProfile?.completedAssessments > 0) {
       activities.push({ action: 'Completed Personality Assessment', time: '2 hours ago', type: 'assessment' });
     }
@@ -240,7 +252,18 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const getUpcomingDeadlines = () => {
     const deadlines = [];
     
-    // Only show deadlines if user has active projects or goals
+    // Demo account gets comprehensive deadlines
+    if (userProfile?.email === 'john.doe@lincolnhs.org') {
+      return [
+        { title: 'Science Fair Project Submission', date: '2024-03-15', type: 'project', priority: 'high' },
+        { title: 'Youth Leadership Summit Application', date: '2024-04-01', type: 'opportunity', priority: 'medium' },
+        { title: 'Python Course Final Project', date: '2024-04-30', type: 'academic', priority: 'medium' },
+        { title: 'Robotics Team Regional Competition', date: '2024-05-10', type: 'competition', priority: 'high' },
+        { title: 'Debate Team Practice Session', date: '2024-02-28', type: 'meeting', priority: 'low' }
+      ];
+    }
+    
+    // Regular logic for other users
     if (userProfile?.activeGoals > 2) {
       deadlines.push({ title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' });
     }
