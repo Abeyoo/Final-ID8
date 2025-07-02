@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Target, Users, Trophy, Calendar, BookOpen, Star, Zap, Brain } from 'lucide-react';
+import { BookOpen, Target, Users, Trophy, Brain, Zap, TrendingUp, Calendar, Clock, AlertCircle } from 'lucide-react';
 
 interface DashboardProps {
   userProfile?: any;
@@ -41,20 +41,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     { action: 'Connected with mentor Sarah Chen', time: '1 week ago', type: 'community' },
   ];
 
-  const strengthsProgress = [
-    { name: 'Leadership', progress: 95, color: 'bg-purple-500' },
-    { name: 'Communication', progress: 92, color: 'bg-blue-500' },
-    { name: 'Problem Solving', progress: 90, color: 'bg-green-500' },
-    { name: 'Creativity', progress: 88, color: 'bg-orange-500' },
-    { name: 'Empathy', progress: 85, color: 'bg-pink-500' },
-  ];
-
-  const upcomingDeadlines = [
-    { title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' },
-    { title: 'Leadership Workshop Application', date: '2024-04-01', type: 'opportunity', priority: 'medium' },
-    { title: 'Team Meeting - Drama Club', date: '2024-02-25', type: 'meeting', priority: 'low' },
-  ];
-
   const personalityInsights = {
     Leader: {
       description: 'Natural born leader who takes initiative and inspires others to achieve common goals',
@@ -62,9 +48,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       growthAreas: ['Delegation', 'Patience', 'Active listening', 'Flexibility']
     },
     Innovator: {
-      description: 'Creative visionary who brings fresh perspectives and generates original solutions',
-      strengths: ['Creative thinking', 'Problem solving', 'Adaptability', 'Future-focused'],
-      growthAreas: ['Implementation', 'Detail focus', 'Routine tasks', 'Practical constraints']
+      description: 'Creative problem-solver who brings fresh perspectives and pioneering solutions',
+      strengths: ['Innovation', 'Creative thinking', 'Problem solving', 'Vision'],
+      growthAreas: ['Implementation', 'Practical focus', 'Follow-through', 'Risk assessment']
     },
     Collaborator: {
       description: 'Team-oriented individual who builds bridges and fosters positive relationships',
@@ -88,7 +74,79 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     }
   };
 
+  // Dynamic strengths based on personality type and user progress
+  const getStrengthsForPersonality = (personalityType: string) => {
+    const baseStrengths = personalityInsights[personalityType as keyof typeof personalityInsights]?.strengths || [];
+    
+    // Convert personality strengths to progress format with dynamic scoring
+    const strengthsWithProgress = baseStrengths.map((strength: string, index: number) => {
+      // Base progress decreases slightly for each strength to show realistic distribution
+      const baseProgress = 95 - (index * 3);
+      
+      // Add some variation based on user activity
+      const activityBonus = Math.min(10, (userProfile?.completedAssessments || 0) * 2);
+      const finalProgress = Math.min(100, baseProgress + activityBonus);
+      
+      return {
+        name: strength,
+        progress: finalProgress,
+        color: getColorForStrength(strength, index),
+        description: getStrengthDescription(strength)
+      };
+    });
+    
+    return strengthsWithProgress;
+  };
+
+  const getColorForStrength = (strength: string, index: number) => {
+    const colors = [
+      'bg-gradient-to-r from-purple-500 to-purple-600',
+      'bg-gradient-to-r from-blue-500 to-blue-600', 
+      'bg-gradient-to-r from-green-500 to-green-600',
+      'bg-gradient-to-r from-orange-500 to-orange-600',
+      'bg-gradient-to-r from-pink-500 to-pink-600',
+      'bg-gradient-to-r from-indigo-500 to-indigo-600'
+    ];
+    return colors[index % colors.length];
+  };
+
+  const getStrengthDescription = (strength: string) => {
+    const descriptions: Record<string, string> = {
+      'Takes charge': 'Natural ability to step up and lead in challenging situations',
+      'Motivates others': 'Inspiring others to achieve their best and reach common goals',
+      'Strategic thinking': 'Ability to see the big picture and plan for long-term success',
+      'Decision making': 'Confidence in making important choices under pressure',
+      'Innovation': 'Creative thinking and developing novel solutions to problems',
+      'Creative thinking': 'Generating original ideas and approaching problems uniquely',
+      'Problem solving': 'Analytical thinking and finding effective solutions',
+      'Vision': 'Ability to see future possibilities and inspire others toward them',
+      'Team building': 'Building strong relationships and fostering collaboration',
+      'Communication': 'Effectively conveying ideas and connecting with others',
+      'Empathy': 'Understanding and connecting with others\' emotions and experiences',
+      'Conflict resolution': 'Helping others find common ground and resolve differences',
+      'Attention to detail': 'Maintaining high standards and catching important details',
+      'Quality focus': 'Commitment to excellence and delivering outstanding results',
+      'Organization': 'Structuring tasks and managing complex projects effectively',
+      'Reliability': 'Consistent performance and trustworthy follow-through',
+      'Learning agility': 'Quickly adapting and acquiring new knowledge and skills',
+      'Curiosity': 'Natural desire to explore, learn, and understand new concepts',
+      'Research skills': 'Systematic investigation and information gathering abilities',
+      'Open-mindedness': 'Willingness to consider new perspectives and ideas',
+      'Diplomacy': 'Tactful communication and building bridges between different perspectives',
+      'Understanding': 'Deep comprehension of complex situations and human nature'
+    };
+    return descriptions[strength] || 'A key strength that contributes to your success';
+  };
+
   const personalityType = userProfile?.personalityType || 'Leader';
+  const strengthsProgress = getStrengthsForPersonality(personalityType);
+
+  const upcomingDeadlines = [
+    { title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' },
+    { title: 'Leadership Workshop Application', date: '2024-04-01', type: 'opportunity', priority: 'medium' },
+    { title: 'Team Meeting - Drama Club', date: '2024-02-25', type: 'meeting', priority: 'low' },
+  ];
+
   const personalityInsight = {
     type: personalityType,
     ...personalityInsights[personalityType as keyof typeof personalityInsights]
@@ -155,24 +213,85 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
           </div>
         </div>
 
-        {/* Top Strengths */}
+        {/* Enhanced Top Strengths */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Your Top Strengths</h2>
             <Zap size={20} className="text-yellow-500" />
           </div>
-          <div className="space-y-4">
-            {strengthsProgress.slice(0, 3).map((strength, index) => (
-              <div key={index}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">{strength.name}</span>
-                  <span className="text-sm font-semibold text-gray-900">{strength.progress}%</span>
+          <div className="space-y-5">
+            {strengthsProgress.slice(0, 4).map((strength, index) => (
+              <div key={index} className="group">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-1">
+                      <span className="text-sm font-semibold text-gray-900">{strength.name}</span>
+                      <span className="ml-2 text-xs font-medium text-gray-500">#{index + 1}</span>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
+                      {strength.description}
+                    </p>
+                  </div>
+                  <div className="ml-3 text-right">
+                    <span className="text-sm font-bold text-gray-900">{strength.progress}%</span>
+                    <div className="text-xs text-gray-500">mastery</div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                   <div
-                    className={`h-2 rounded-full ${strength.color} transition-all duration-300`}
+                    className={`h-full rounded-full ${strength.color} transition-all duration-500 shadow-sm`}
                     style={{ width: `${strength.progress}%` }}
                   />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-500 text-center">
+              Strengths grow stronger through active practice and real-world application
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Quick Actions</h2>
+            <TrendingUp size={20} className="text-green-500" />
+          </div>
+          <div className="space-y-3">
+            <button className="w-full text-left bg-purple-50 hover:bg-purple-100 rounded-lg p-3 transition-colors">
+              <div className="font-medium text-purple-900">Take Assessment</div>
+              <div className="text-sm text-purple-600">Discover more about yourself</div>
+            </button>
+            <button className="w-full text-left bg-blue-50 hover:bg-blue-100 rounded-lg p-3 transition-colors">
+              <div className="font-medium text-blue-900">Set New Goal</div>
+              <div className="text-sm text-blue-600">Define your next objective</div>
+            </button>
+            <button className="w-full text-left bg-green-50 hover:bg-green-100 rounded-lg p-3 transition-colors">
+              <div className="font-medium text-green-900">Join Team</div>
+              <div className="text-sm text-green-600">Connect with peers</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h2>
+          <div className="space-y-4">
+            {recentActivities.map((activity, index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <div className={`w-2 h-2 rounded-full mt-2 ${
+                  activity.type === 'assessment' ? 'bg-purple-500' :
+                  activity.type === 'team' ? 'bg-green-500' :
+                  activity.type === 'achievement' ? 'bg-orange-500' :
+                  activity.type === 'goal' ? 'bg-blue-500' : 'bg-gray-500'
+                }`}></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                  <p className="text-xs text-gray-500">{activity.time}</p>
                 </div>
               </div>
             ))}
@@ -185,106 +304,26 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
             <h2 className="text-xl font-semibold text-gray-900">Upcoming Deadlines</h2>
             <Calendar size={20} className="text-blue-500" />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {upcomingDeadlines.map((deadline, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900">{deadline.title}</h3>
-                  <p className="text-xs text-gray-500">{new Date(deadline.date).toLocaleDateString()}</p>
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    deadline.priority === 'high' ? 'bg-red-500' :
+                    deadline.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                  }`}></div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{deadline.title}</p>
+                    <p className="text-xs text-gray-500 capitalize">{deadline.type}</p>
+                  </div>
                 </div>
-                <span className={`w-3 h-3 rounded-full ${
-                  deadline.priority === 'high' ? 'bg-red-500' :
-                  deadline.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                }`} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activities */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-            <TrendingUp size={20} className="text-green-500" />
-          </div>
-          <div className="space-y-4">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className={`w-2 h-2 rounded-full mt-2 ${
-                  activity.type === 'assessment' ? 'bg-purple-500' :
-                  activity.type === 'team' ? 'bg-blue-500' :
-                  activity.type === 'achievement' ? 'bg-green-500' :
-                  activity.type === 'goal' ? 'bg-orange-500' : 'bg-pink-500'
-                }`} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
+                <div className="flex items-center text-gray-500">
+                  <Clock size={14} className="mr-1" />
+                  <span className="text-xs">{new Date(deadline.date).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Recommended Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recommended for You</h2>
-            <Star size={20} className="text-yellow-500" />
-          </div>
-          <div className="space-y-4">
-            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <h3 className="font-semibold text-purple-900 mb-2">Complete Values Assessment</h3>
-              <p className="text-sm text-purple-700 mb-3">Discover what matters most to you and align your goals accordingly.</p>
-              <button className="text-purple-600 text-sm font-medium hover:text-purple-700">
-                Start Assessment →
-              </button>
-            </div>
-            
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Join Math Olympiad Team</h3>
-              <p className="text-sm text-blue-700 mb-3">Based on your analytical thinking strength, this team is a perfect match.</p>
-              <button className="text-blue-600 text-sm font-medium hover:text-blue-700">
-                View Team →
-              </button>
-            </div>
-            
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-semibold text-green-900 mb-2">Leadership Workshop</h3>
-              <p className="text-sm text-green-700 mb-3">Enhance your natural leadership abilities with advanced techniques.</p>
-              <button className="text-green-600 text-sm font-medium hover:text-green-700">
-                Learn More →
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="bg-white bg-opacity-20 rounded-lg p-4 text-left hover:bg-opacity-30 transition-all">
-            <Brain size={24} className="mb-2" />
-            <h3 className="font-semibold mb-2">Take Assessment</h3>
-            <p className="text-sm opacity-90">Discover new insights</p>
-          </button>
-          <button className="bg-white bg-opacity-20 rounded-lg p-4 text-left hover:bg-opacity-30 transition-all">
-            <Users size={24} className="mb-2" />
-            <h3 className="font-semibold mb-2">Find Teammates</h3>
-            <p className="text-sm opacity-90">Connect with peers</p>
-          </button>
-          <button className="bg-white bg-opacity-20 rounded-lg p-4 text-left hover:bg-opacity-30 transition-all">
-            <Target size={24} className="mb-2" />
-            <h3 className="font-semibold mb-2">Set New Goal</h3>
-            <p className="text-sm opacity-90">Plan your development</p>
-          </button>
-          <button className="bg-white bg-opacity-20 rounded-lg p-4 text-left hover:bg-opacity-30 transition-all">
-            <Trophy size={24} className="mb-2" />
-            <h3 className="font-semibold mb-2">Browse Opportunities</h3>
-            <p className="text-sm opacity-90">Find competitions</p>
-          </button>
         </div>
       </div>
     </div>
