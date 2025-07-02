@@ -65,6 +65,23 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
       const data = await response.json();
 
       if (response.ok) {
+        // Save credentials for easy return access
+        const savedAccounts = JSON.parse(localStorage.getItem('id8_accounts') || '[]');
+        const newAccount = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          createdAt: new Date().toISOString(),
+          school: formData.school,
+          grade: formData.grade
+        };
+        
+        // Add to saved accounts if not already exists
+        if (!savedAccounts.find((acc: any) => acc.email === formData.email)) {
+          savedAccounts.push(newAccount);
+          localStorage.setItem('id8_accounts', JSON.stringify(savedAccounts));
+        }
+
         const newUserProfile = {
           id: data.user.id,
           name: data.user.name,

@@ -55,6 +55,8 @@ A comprehensive student development platform that helps students with career ass
     - Connected mastery percentages to AI personality analysis and database
     - Strength scores now use real AI personality scores, percentile rankings, and confidence indicators
     - Dynamic strength calculation based on actual behavioral data and user activity patterns
+    - **John Doe Demo Account**: Transformed into comprehensive showcase with realistic goals, achievements, team interactions, opportunity applications, and AI personality analysis data
+    - Demo account features varied percentile rankings (88% Leader, 72% Innovator, 85% Collaborator) with rich activity history and upcoming deadlines
 
 ## User Preferences
 - Prefers sign-in page as the landing experience instead of onboarding

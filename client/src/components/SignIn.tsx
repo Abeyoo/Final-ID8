@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, AlertCircle } from 'lucide-react';
 
 interface SignInProps {
@@ -14,6 +14,13 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
+
+  // Load saved accounts on component mount
+  useEffect(() => {
+    const accounts = JSON.parse(localStorage.getItem('id8_accounts') || '[]');
+    setSavedAccounts(accounts);
+  }, []);
 
   // Mock user data for demonstration
   const mockUsers = [
@@ -167,12 +174,86 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
               )}
             </button>
 
-            {/* Demo Credentials */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">Demo Credentials:</h4>
-              <div className="text-sm text-blue-800 space-y-1">
-                <p><strong>Email:</strong> john.doe@lincolnhs.org</p>
-                <p><strong>Password:</strong> password123</p>
+            {/* Demo Accounts */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+                <User size={16} className="mr-2" />
+                Available Demo Accounts
+              </h4>
+              <div className="space-y-3">
+                {/* Comprehensive Demo Account */}
+                <div className="bg-white rounded-md p-3 border border-blue-100">
+                  <div className="flex justify-between items-start mb-2">
+                    <h5 className="font-medium text-gray-900">John Doe - Full Demo</h5>
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
+                  </div>
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p><strong>Email:</strong> john.doe@lincolnhs.org</p>
+                    <p><strong>Password:</strong> password123</p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      • 5 Goals (30-100% progress) • 5 Achievements • Team Leadership roles • AI Personality Analysis
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ email: 'john.doe@lincolnhs.org', password: 'password123' });
+                    }}
+                    className="mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    Use These Credentials
+                  </button>
+                </div>
+
+                {/* Saved User Accounts */}
+                {savedAccounts.length > 0 && (
+                  <>
+                    {savedAccounts.slice(0, 2).map((account, index) => (
+                      <div key={account.email} className="bg-white rounded-md p-3 border border-blue-100">
+                        <div className="flex justify-between items-start mb-2">
+                          <h5 className="font-medium text-gray-900">{account.name}</h5>
+                          <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Your Account</span>
+                        </div>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p><strong>Email:</strong> {account.email}</p>
+                          <p><strong>Password:</strong> {account.password}</p>
+                          <p className="text-xs text-gray-600 mt-2">
+                            • {account.school} • Grade {account.grade} • Created {new Date(account.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData({ email: account.email, password: account.password });
+                          }}
+                          className="mt-2 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 transition-colors"
+                        >
+                          Use These Credentials
+                        </button>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {/* New User Account */}
+                <div className="bg-white rounded-md p-3 border border-blue-100">
+                  <div className="flex justify-between items-start mb-2">
+                    <h5 className="font-medium text-gray-900">New User Experience</h5>
+                    <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">Fresh Start</span>
+                  </div>
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p><strong>Action:</strong> Click "Create your account" below</p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      • Complete onboarding flow • Start with 0 stats • Build your profile from scratch
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-xs text-blue-700">
+                  💡 <strong>Tip:</strong> Your account progress is automatically saved. Return anytime with the same credentials.
+                </p>
               </div>
             </div>
 
