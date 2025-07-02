@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Target, Users, Trophy, Brain, Zap, TrendingUp, Calendar, Clock, AlertCircle } from 'lucide-react';
 
 interface DashboardProps {
@@ -6,6 +6,43 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
+  const [personalityData, setPersonalityData] = useState<any>(null);
+  const [percentileData, setPercentileData] = useState<any>({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (userProfile?.id) {
+      fetchPersonalityData();
+      fetchPercentileData();
+    }
+  }, [userProfile?.id]);
+
+  const fetchPersonalityData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/personality/${userProfile.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPersonalityData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch personality data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchPercentileData = async () => {
+    try {
+      const response = await fetch(`/api/personality/${userProfile.id}/percentiles`);
+      if (response.ok) {
+        const data = await response.json();
+        setPercentileData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch percentile data:', error);
+    }
+  };
   const stats = [
     { 
       label: 'Completed Assessments', 
@@ -74,28 +111,63 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     }
   };
 
-  // Dynamic strengths based on personality type and user progress
-  const getStrengthsForPersonality = (personalityType: string) => {
+  // AI-powered strengths based on real personality analysis
+  const getStrengthsFromAI = () => {
+    // If we have AI personality scores, use them
+    if (personalityData?.personalityScores) {
+      const scores = personalityData.personalityScores;
+      
+      // Convert AI personality scores to strength format
+      const aiStrengths = Object.entries(scores).map(([type, score]: [string, any], index: number) => {
+        const strengthNames = personalityInsights[type as keyof typeof personalityInsights]?.strengths || [type];
+        const primaryStrength = strengthNames[0] || type;
+        
+        // Convert AI score (0-1) to percentage and add percentile bonus
+        const baseProgress = Math.round(score * 100);
+        const percentileBonus = percentileData[type]?.percentile ? Math.round(percentileData[type].percentile * 0.1) : 0;
+        const activityBonus = Math.min(5, (userProfile?.completedAssessments || 0));
+        const finalProgress = Math.min(100, baseProgress + percentileBonus + activityBonus);
+        
+        return {
+          name: primaryStrength,
+          personalityType: type,
+          progress: finalProgress,
+          aiScore: score,
+          percentile: percentileData[type]?.percentile || 0,
+          color: getColorForStrength(primaryStrength, index),
+          description: getStrengthDescription(primaryStrength),
+          confidence: personalityData.confidence || 0.8
+        };
+      });
+      
+      // Sort by AI score and return top strengths
+      return aiStrengths.sort((a, b) => b.aiScore - a.aiScore);
+    }
+    
+    // Fallback to personality type-based strengths if no AI data
+    return getFallbackStrengths();
+  };
+
+  const getFallbackStrengths = () => {
+    const personalityType = userProfile?.personalityType || personalityData?.personalityType || 'Leader';
     const baseStrengths = personalityInsights[personalityType as keyof typeof personalityInsights]?.strengths || [];
     
-    // Convert personality strengths to progress format with dynamic scoring
-    const strengthsWithProgress = baseStrengths.map((strength: string, index: number) => {
-      // Base progress decreases slightly for each strength to show realistic distribution
-      const baseProgress = 95 - (index * 3);
-      
-      // Add some variation based on user activity
+    return baseStrengths.map((strength: string, index: number) => {
+      const baseProgress = 85 - (index * 5); // Lower base for fallback
       const activityBonus = Math.min(10, (userProfile?.completedAssessments || 0) * 2);
       const finalProgress = Math.min(100, baseProgress + activityBonus);
       
       return {
         name: strength,
+        personalityType,
         progress: finalProgress,
+        aiScore: 0.8 - (index * 0.1),
+        percentile: 50,
         color: getColorForStrength(strength, index),
-        description: getStrengthDescription(strength)
+        description: getStrengthDescription(strength),
+        confidence: 0.6
       };
     });
-    
-    return strengthsWithProgress;
   };
 
   const getColorForStrength = (strength: string, index: number) => {
@@ -138,8 +210,8 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     return descriptions[strength] || 'A key strength that contributes to your success';
   };
 
-  const personalityType = userProfile?.personalityType || 'Leader';
-  const strengthsProgress = getStrengthsForPersonality(personalityType);
+  const personalityType = userProfile?.personalityType || personalityData?.personalityType || 'Leader';
+  const strengthsProgress = getStrengthsFromAI();
 
   const upcomingDeadlines = [
     { title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' },
@@ -220,35 +292,88 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
             <Zap size={20} className="text-yellow-500" />
           </div>
           <div className="space-y-5">
-            {strengthsProgress.slice(0, 4).map((strength, index) => (
-              <div key={index} className="group">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-1">
-                      <span className="text-sm font-semibold text-gray-900">{strength.name}</span>
-                      <span className="ml-2 text-xs font-medium text-gray-500">#{index + 1}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
-                      {strength.description}
-                    </p>
-                  </div>
-                  <div className="ml-3 text-right">
-                    <span className="text-sm font-bold text-gray-900">{strength.progress}%</span>
-                    <div className="text-xs text-gray-500">mastery</div>
-                  </div>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${strength.color} transition-all duration-500 shadow-sm`}
-                    style={{ width: `${strength.progress}%` }}
-                  />
-                </div>
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                <p className="text-sm text-gray-500 mt-2">Analyzing your strengths...</p>
               </div>
-            ))}
+            ) : (
+              strengthsProgress.slice(0, 4).map((strength: any, index: number) => (
+                <div key={index} className="group">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center mb-1">
+                        <span className="text-sm font-semibold text-gray-900">{strength.name}</span>
+                        <span className="ml-2 text-xs font-medium text-gray-500">#{index + 1}</span>
+                        {strength.confidence && (
+                          <div className="ml-2 flex items-center">
+                            <div className={`w-2 h-2 rounded-full ${
+                              strength.confidence > 0.8 ? 'bg-green-500' : 
+                              strength.confidence > 0.6 ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}></div>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
+                        {strength.description}
+                      </p>
+                      {strength.percentile > 0 && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Top {100 - strength.percentile}% of students
+                        </p>
+                      )}
+                    </div>
+                    <div className="ml-3 text-right">
+                      <span className="text-sm font-bold text-gray-900">{strength.progress}%</span>
+                      <div className="text-xs text-gray-500">
+                        {personalityData?.personalityScores ? 'AI-powered' : 'estimated'}
+                      </div>
+                      {strength.aiScore && (
+                        <div className="text-xs text-purple-600">
+                          Score: {(strength.aiScore * 100).toFixed(0)}%
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${strength.color} transition-all duration-500 shadow-sm`}
+                      style={{ width: `${strength.progress}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-xs text-gray-500 text-center">
-              Strengths grow stronger through active practice and real-world application
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>High confidence</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <span>Medium confidence</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span>Low confidence</span>
+                </div>
+              </div>
+              <div className="text-right">
+                {personalityData?.personalityScores ? (
+                  <span className="text-purple-600 font-medium">AI-Powered Analysis</span>
+                ) : (
+                  <span>Estimated from personality type</span>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              {personalityData?.lastUpdated ? 
+                `Last updated: ${new Date(personalityData.lastUpdated).toLocaleDateString()}` :
+                'Complete assessments to unlock AI-powered strength analysis'
+              }
             </p>
           </div>
         </div>
