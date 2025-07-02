@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User, AlertCircle, UserPlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User, AlertCircle, UserPlus, Copy, RefreshCw } from 'lucide-react';
 
 interface SignUpProps {
   onSignUp: (profile: any) => void;
@@ -10,15 +10,39 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    confirmPassword: '',
     school: '',
     grade: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [passwordCopied, setPasswordCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Generate secure password on component mount
+  useEffect(() => {
+    generateSecurePassword();
+  }, []);
+
+  const generateSecurePassword = () => {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    setGeneratedPassword(password);
+    setPasswordCopied(false);
+  };
+
+  const copyPasswordToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedPassword);
+      setPasswordCopied(true);
+      setTimeout(() => setPasswordCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy password:', err);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -35,13 +59,13 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
     setError('');
     
     // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (!formData.name || !formData.email || !formData.school || !formData.grade) {
+      setError('Please fill in all fields');
       return;
     }
     
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (!generatedPassword) {
+      setError('Password generation failed. Please try regenerating.');
       return;
     }
 
@@ -56,7 +80,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: formData.password,
+          password: generatedPassword,
           school: formData.school,
           grade: formData.grade
         }),
@@ -70,7 +94,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
         const newAccount = {
           name: formData.name,
           email: formData.email,
-          password: formData.password,
+          password: generatedPassword,
           createdAt: new Date().toISOString(),
           school: formData.school,
           grade: formData.grade
@@ -109,8 +133,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
     }
   };
 
-  const isFormValid = formData.name && formData.email && formData.password && 
-                     formData.confirmPassword && formData.school && formData.grade;
+  const isFormValid = formData.name && formData.email && formData.school && formData.grade && generatedPassword;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 flex items-center justify-center p-4">
@@ -205,57 +228,43 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
               </select>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+            {/* Generated Password Display */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+              <label className="block text-sm font-medium text-green-900 mb-3">
+                <Lock size={16} className="inline mr-2" />
+                Your Secure Password (Automatically Generated)
               </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
-                  placeholder="Create a password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+              <div className="flex items-center space-x-3">
+                <div className="flex-1 bg-white border border-green-200 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
+                  {generatedPassword}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={copyPasswordToClipboard}
+                    className={`p-3 rounded-lg transition-all ${
+                      passwordCopied 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    }`}
+                    title="Copy password to clipboard"
+                  >
+                    <Copy size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generateSecurePassword}
+                    className="p-3 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all"
+                    title="Generate new password"
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
-
-            {/* Confirm Password Field */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
-                  placeholder="Confirm your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+              <div className="mt-3 text-xs text-green-700">
+                <p>🔒 <strong>Important:</strong> Save this password! You'll need it to sign back in.</p>
+                <p>• 12 characters with letters, numbers, and symbols for maximum security</p>
+                <p>• Click the copy button to save it to your clipboard</p>
               </div>
             </div>
 

@@ -330,17 +330,17 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
               <div>
                 <h4 className="font-semibold mb-1">Strengths:</h4>
                 <ul className="space-y-1 opacity-80">
-                  {personalityInsight.strengths.map((strength, i) => (
+                  {personalityInsight.strengths?.map((strength, i) => (
                     <li key={i}>• {strength}</li>
-                  ))}
+                  )) || []}
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">Growth Areas:</h4>
                 <ul className="space-y-1 opacity-80">
-                  {personalityInsight.growthAreas.map((area, i) => (
+                  {personalityInsight.growthAreas?.map((area, i) => (
                     <li key={i}>• {area}</li>
-                  ))}
+                  )) || []}
                 </ul>
               </div>
             </div>
