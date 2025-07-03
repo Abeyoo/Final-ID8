@@ -5,6 +5,7 @@ import { queryClient } from '@/lib/queryClient';
 const DevelopmentPlans: React.FC = () => {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showCompletedGoals, setShowCompletedGoals] = useState(false);
   const [completedGoalsCount, setCompletedGoalsCount] = useState(0);
   const [newGoalForm, setNewGoalForm] = useState({
     title: '',
@@ -264,19 +265,72 @@ const DevelopmentPlans: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Development Plans</h1>
           <p className="text-gray-600">Track your personal growth goals and milestones.</p>
         </div>
-        <button
-          onClick={() => setShowNewGoalForm(true)}
-          className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
-        >
-          <Plus size={20} className="mr-2" />
-          New Goal
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setShowCompletedGoals(!showCompletedGoals)}
+            className={`flex items-center px-4 py-2 rounded-lg transition-all ${
+              showCompletedGoals 
+                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <CheckCircle size={20} className="mr-2" />
+            {showCompletedGoals ? 'Hide Completed' : 'Show Completed'}
+          </button>
+          <button
+            onClick={() => setShowNewGoalForm(true)}
+            className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+          >
+            <Plus size={20} className="mr-2" />
+            New Goal
+          </button>
+        </div>
+      </div>
+
+      {/* Section Header */}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">
+          {showCompletedGoals ? 'Completed Goals' : 'Active Goals'}
+        </h2>
+        <p className="text-gray-600">
+          {showCompletedGoals 
+            ? 'Goals you have successfully completed' 
+            : 'Goals you are currently working on'
+          }
+        </p>
       </div>
 
       {/* Goals Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {goals.filter(goal => goal.status === 'active').map((goal) => (
-          <div key={goal.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {goals.filter(goal => showCompletedGoals ? goal.status === 'completed' : goal.status === 'active').length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Target size={24} className="text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {showCompletedGoals ? 'No completed goals yet' : 'No active goals'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {showCompletedGoals 
+                ? 'Complete some goals to see them here' 
+                : 'Create your first goal to get started'
+              }
+            </p>
+            {!showCompletedGoals && (
+              <button
+                onClick={() => setShowNewGoalForm(true)}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                <Plus size={16} className="mr-2" />
+                Create Goal
+              </button>
+            )}
+          </div>
+        ) : (
+          goals.filter(goal => showCompletedGoals ? goal.status === 'completed' : goal.status === 'active').map((goal) => (
+            <div key={goal.id} className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${
+              goal.status === 'completed' ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200' : ''
+            }`}>
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
@@ -334,7 +388,8 @@ const DevelopmentPlans: React.FC = () => {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
