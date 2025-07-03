@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { personalityAI } from "./personalityAI";
 import { db } from "./db";
 import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, or, isNull } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
@@ -78,13 +78,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   async function getUserStats(userId: number) {
     try {
       const [assessmentCount] = await db.select({ count: sql`count(*)` }).from(assessmentResponses).where(eq(assessmentResponses.userId, userId));
-      const [goalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(eq(goals.userId, userId));
+      const [activeGoalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(and(eq(goals.userId, userId), or(eq(goals.completed, false), isNull(goals.completed))));
       const [achievementCount] = await db.select({ count: sql`count(*)` }).from(achievementsTable).where(eq(achievementsTable.userId, userId));
       const [teamCount] = await db.select({ count: sql`count(distinct team_id)` }).from(teamInteractions).where(eq(teamInteractions.userId, userId));
       
       return {
         completedAssessments: Number(assessmentCount.count),
-        activeGoals: Number(goalCount.count),
+        activeGoals: Number(activeGoalCount.count),
         teamProjects: Number(teamCount.count),
         achievements: Number(achievementCount.count)
       };

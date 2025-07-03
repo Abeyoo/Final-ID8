@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Target, Plus, CheckCircle, Clock, TrendingUp, BookOpen, X } from 'lucide-react';
+import { queryClient } from '@/lib/queryClient';
 
 const DevelopmentPlans: React.FC = () => {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
@@ -111,6 +112,8 @@ const DevelopmentPlans: React.FC = () => {
             if (result?.personalityUpdate) {
               console.log('Personality updated after goal completion:', result.personalityUpdate);
             }
+            // Invalidate the dashboard stats cache to trigger real-time update
+            queryClient.invalidateQueries({ queryKey: ['/api/users/1/stats'] });
           }).catch(error => {
             console.error('Failed to track goal completion:', error);
           });
