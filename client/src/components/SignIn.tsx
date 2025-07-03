@@ -28,6 +28,7 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
       email: 'john.doe@lincolnhs.org',
       password: 'password123',
       profile: {
+        id: 1,
         name: 'John Doe',
         age: '16',
         school: 'Lincoln High School',
@@ -42,6 +43,7 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
       email: 'sarah.chen@techacademy.edu',
       password: 'password123',
       profile: {
+        id: 2,
         name: 'Sarah Chen',
         age: '17',
         school: 'Tech Academy',
