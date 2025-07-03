@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target } from 'lucide-react';
+import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target, MoreHorizontal } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
 
 interface TeamCollaborationProps {
@@ -11,6 +11,8 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
   const [showCreateTeamForm, setShowCreateTeamForm] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [selectedTeamForMembers, setSelectedTeamForMembers] = useState<any>(null);
   const [progressUpdate, setProgressUpdate] = useState({
     newProgress: 0,
     updateNote: '',
@@ -43,7 +45,17 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
         tasksCompleted: 2,
         totalTasks: 5,
         priority: 'high'
-      }
+      },
+      memberDetails: [
+        { id: 1, name: 'John Doe', role: 'Team Leader', avatar: 'JD', online: true },
+        { id: 2, name: 'Sarah Chen', role: 'Researcher', avatar: 'SC', online: true },
+        { id: 3, name: 'Mike Johnson', role: 'Data Analyst', avatar: 'MJ', online: false },
+        { id: 4, name: 'Emily Rodriguez', role: 'Presenter', avatar: 'ER', online: true }
+      ],
+      joinRequests: [
+        { id: 1, name: 'Alex Thompson', message: 'I have experience with solar energy research and would love to contribute to the project!', timestamp: '2 hours ago' },
+        { id: 2, name: 'Lisa Park', message: 'I\'m great with data visualization and can help with presenting results.', timestamp: '1 day ago' }
+      ]
     },
     {
       id: 2,
@@ -62,7 +74,24 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
         tasksCompleted: 2,
         totalTasks: 5,
         priority: 'medium'
-      }
+      },
+      memberDetails: [
+        { id: 1, name: 'John Doe', role: 'Stage Manager', avatar: 'JD', online: true },
+        { id: 2, name: 'Emma Watson', role: 'Juliet', avatar: 'EW', online: true },
+        { id: 3, name: 'Ryan Davis', role: 'Romeo', avatar: 'RD', online: false },
+        { id: 4, name: 'Sophie Turner', role: 'Nurse', avatar: 'ST', online: true },
+        { id: 5, name: 'David Miller', role: 'Mercutio', avatar: 'DM', online: false },
+        { id: 6, name: 'Grace Lee', role: 'Lady Capulet', avatar: 'GL', online: true },
+        { id: 7, name: 'Tom Wilson', role: 'Friar Lawrence', avatar: 'TW', online: false },
+        { id: 8, name: 'Mia Garcia', role: 'Costume Designer', avatar: 'MG', online: true },
+        { id: 9, name: 'Jake Brown', role: 'Set Designer', avatar: 'JB', online: false },
+        { id: 10, name: 'Olivia Jones', role: 'Props Manager', avatar: 'OJ', online: true },
+        { id: 11, name: 'Noah Taylor', role: 'Lighting Tech', avatar: 'NT', online: false },
+        { id: 12, name: 'Ava Martinez', role: 'Sound Tech', avatar: 'AM', online: true }
+      ],
+      joinRequests: [
+        { id: 1, name: 'Chris Anderson', message: 'I have stage management experience and would love to help backstage.', timestamp: '3 hours ago' }
+      ]
     },
     {
       id: 3,
@@ -75,7 +104,18 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
       status: 'active',
       category: 'Academic',
       skills: ['Mathematics', 'Problem Solving', 'Competition'],
-      project: null // This team doesn't have a specific project board
+      project: null, // This team doesn't have a specific project board
+      memberDetails: [
+        { id: 1, name: 'John Doe', role: 'Member', avatar: 'JD', online: true },
+        { id: 2, name: 'Kevin Chang', role: 'Captain', avatar: 'KC', online: true },
+        { id: 3, name: 'Maya Patel', role: 'Vice Captain', avatar: 'MP', online: false },
+        { id: 4, name: 'Alex Kim', role: 'Member', avatar: 'AK', online: true },
+        { id: 5, name: 'Sam Rivera', role: 'Member', avatar: 'SR', online: false },
+        { id: 6, name: 'Zoe Clark', role: 'Member', avatar: 'ZC', online: true }
+      ],
+      joinRequests: [
+        { id: 1, name: 'Daniel Wong', message: 'I placed 3rd in the regional math competition last year and would like to join the squad.', timestamp: '5 hours ago' }
+      ]
     }
   ]);
 
@@ -125,7 +165,11 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
       status: 'active' as const,
       category: newTeamForm.category,
       skills: skills.length > 0 ? skills : ['General'],
-      project: null // New teams don't start with a project
+      project: null, // New teams don't start with a project
+      memberDetails: [
+        { id: 1, name: 'John Doe', role: 'Team Leader', avatar: 'JD', online: true }
+      ],
+      joinRequests: []
     };
 
     setTeams(prev => [...prev, newTeam]);
@@ -293,10 +337,16 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center text-gray-500">
+                    <button 
+                      className="flex items-center text-gray-500 hover:text-blue-600 transition-colors"
+                      onClick={() => {
+                        setSelectedTeamForMembers(team);
+                        setShowMembersModal(true);
+                      }}
+                    >
                       <Users size={16} className="mr-1" />
                       <span className="text-sm">{team.members}</span>
-                    </div>
+                    </button>
                   </div>
                   
                   <p className="text-gray-600 text-sm mb-4">{team.description}</p>
@@ -704,6 +754,106 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Members Modal */}
+      {showMembersModal && selectedTeamForMembers && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">{selectedTeamForMembers.name}</h3>
+                  <p className="text-gray-600">{selectedTeamForMembers.memberDetails.length} members</p>
+                </div>
+                <button
+                  onClick={() => setShowMembersModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Invite Button */}
+              <div className="mb-6">
+                <button className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all">
+                  <Plus size={20} className="mr-2" />
+                  Invite Members
+                </button>
+              </div>
+
+              {/* Current Members */}
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Current Members</h4>
+                <div className="space-y-3">
+                  {selectedTeamForMembers.memberDetails.map((member: any) => (
+                    <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
+                            {member.avatar}
+                          </div>
+                          {member.online && (
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{member.name}</p>
+                          <p className="text-sm text-gray-600">{member.role}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                          member.online 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {member.online ? 'Online' : 'Offline'}
+                        </span>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <MoreHorizontal size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Join Requests */}
+              {selectedTeamForMembers.joinRequests && selectedTeamForMembers.joinRequests.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                    Join Requests ({selectedTeamForMembers.joinRequests.length})
+                  </h4>
+                  <div className="space-y-4">
+                    {selectedTeamForMembers.joinRequests.map((request: any) => (
+                      <div key={request.id} className="p-4 border border-gray-200 rounded-lg">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-medium text-gray-900">{request.name}</p>
+                            <p className="text-sm text-gray-500">{request.timestamp}</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 mb-3">{request.message}</p>
+                        <div className="flex space-x-2">
+                          <button className="flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                            <CheckCircle size={16} className="mr-1" />
+                            Accept
+                          </button>
+                          <button className="flex items-center px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                            <X size={16} className="mr-1" />
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
