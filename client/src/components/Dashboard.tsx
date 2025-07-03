@@ -19,10 +19,10 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
 
   // Debug log to see what data we're getting
   useEffect(() => {
-    if (userStats) {
-      console.log('Dashboard userStats:', userStats);
-    }
-  }, [userStats]);
+    console.log('Dashboard userProfile:', userProfile);
+    console.log('Dashboard userStats:', userStats);
+    console.log('Dashboard isStatsLoading:', isStatsLoading);
+  }, [userProfile, userStats, isStatsLoading]);
 
   useEffect(() => {
     if (userProfile?.id) {
