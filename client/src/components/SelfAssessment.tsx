@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Brain, Play, CheckCircle, BarChart3, Lightbulb, Star, Target, Users, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 
 interface SelfAssessmentProps {
   userProfile?: any;
@@ -145,28 +146,49 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
     }
   ];
 
-  const handleAnswer = (questionIndex: number, answer: any) => {
+  const handleAnswer = async (questionIndex: number, answer: any) => {
     const assessment = assessments.find(a => a.id === activeAssessment);
-    if (!assessment) return;
+    if (!assessment || !userProfile?.id) return;
 
+    // Save answer locally
     setAnswers(prev => ({
       ...prev,
       [`${activeAssessment}_${questionIndex}`]: answer
     }));
+
+    // Send response to backend for tracking
+    try {
+      await fetch('/api/assessment/response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userProfile.id,
+          assessmentType: activeAssessment,
+          questionId: `${activeAssessment}_${questionIndex}`,
+          response: answer
+        })
+      });
+    } catch (error) {
+      console.error('Failed to track assessment response:', error);
+    }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     const assessment = assessments.find(a => a.id === activeAssessment);
-    if (!assessment) return;
+    if (!assessment || !userProfile?.id) return;
 
     const questions = activeAssessment === 'strengths' ? strengthsQuestions : personalityQuestions;
     
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // Complete assessment
+      // Complete assessment - invalidate cache to update completion status and stats
       setActiveAssessment(null);
       setCurrentQuestion(0);
+      
+      // Invalidate both assessment completion status and user stats
+      queryClient.invalidateQueries({ queryKey: ['/api/assessments', userProfile.id] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userProfile.id}/stats`] });
     }
   };
 

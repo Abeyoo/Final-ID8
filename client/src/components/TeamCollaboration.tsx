@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target } from 'lucide-react';
+import { queryClient } from '@/lib/queryClient';
 
 const TeamCollaboration: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'teams' | 'projects'>('teams');
@@ -158,6 +159,8 @@ const TeamCollaboration: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         console.log('Personality updated after team creation:', result.personalityUpdate);
+        // Invalidate the dashboard stats cache to show updated team projects count
+        queryClient.invalidateQueries({ queryKey: ['/api/users/1/stats'] });
       }
     } catch (error) {
       console.error('Failed to track team creation:', error);

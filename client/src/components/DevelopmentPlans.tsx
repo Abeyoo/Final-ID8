@@ -188,6 +188,8 @@ const DevelopmentPlans: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         console.log('Personality updated after goal creation:', result.personalityUpdate);
+        // Invalidate the dashboard stats cache to show updated active goals count
+        queryClient.invalidateQueries({ queryKey: ['/api/users/1/stats'] });
       }
     } catch (error) {
       console.error('Failed to track goal creation:', error);
