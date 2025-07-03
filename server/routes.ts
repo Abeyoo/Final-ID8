@@ -245,6 +245,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate active goals (not completed)
       const activeGoals = userGoals.filter((goal: any) => !goal.completed).length;
+      
+      // Calculate completed goals
+      const completedGoals = userGoals.filter((goal: any) => goal.completed).length;
 
       // Calculate team projects (unique team IDs)
       const teamProjects = new Set(userTeamInteractions.map((interaction: any) => interaction.teamId)).size;
@@ -255,6 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         completedAssessments,
         activeGoals,
+        completedGoals,
         teamProjects,
         achievements: totalAchievements
       });
