@@ -36,6 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: newUser.email,
           completedAssessments: 0,
           activeGoals: 0,
+          completedGoals: 0,
           teamProjects: 0,
           achievements: 0
         } 
@@ -79,12 +80,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const [assessmentCount] = await db.select({ count: sql`count(*)` }).from(assessmentResponses).where(eq(assessmentResponses.userId, userId));
       const [activeGoalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(and(eq(goals.userId, userId), or(eq(goals.completed, false), isNull(goals.completed))));
+      const [completedGoalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(and(eq(goals.userId, userId), eq(goals.completed, true)));
       const [achievementCount] = await db.select({ count: sql`count(*)` }).from(achievementsTable).where(eq(achievementsTable.userId, userId));
       const [teamCount] = await db.select({ count: sql`count(distinct team_id)` }).from(teamInteractions).where(eq(teamInteractions.userId, userId));
       
       return {
         completedAssessments: Number(assessmentCount.count),
         activeGoals: Number(activeGoalCount.count),
+        completedGoals: Number(completedGoalCount.count),
         teamProjects: Number(teamCount.count),
         achievements: Number(achievementCount.count)
       };
@@ -93,6 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return {
         completedAssessments: 0,
         activeGoals: 0,
+        completedGoals: 0,
         teamProjects: 0,
         achievements: 0
       };

@@ -60,8 +60,8 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       color: 'from-purple-500 to-purple-600' 
     },
     { 
-      label: 'Active Goals', 
-      value: isStatsLoading ? '-' : ((userStats as any)?.activeGoals?.toString() || '0'), 
+      label: 'Completed Goals', 
+      value: isStatsLoading ? '-' : ((userStats as any)?.completedGoals?.toString() || '0'), 
       icon: Target, 
       color: 'from-blue-500 to-blue-600' 
     },
