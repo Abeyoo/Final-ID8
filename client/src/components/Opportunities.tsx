@@ -6,6 +6,7 @@ const Opportunities: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAIRecommendations, setShowAIRecommendations] = useState(true);
+  const [hidePastDeadlines, setHidePastDeadlines] = useState(false);
 
   // Fetch AI-powered opportunity recommendations
   const { data: aiRecommendations = [], isLoading: isLoadingAI } = useQuery({
@@ -189,7 +190,14 @@ const Opportunities: React.FC = () => {
     const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          opp.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || opp.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    
+    // Check if deadline has passed
+    const deadlineDate = new Date(opp.deadline);
+    const currentDate = new Date();
+    const isExpired = deadlineDate < currentDate;
+    const matchesDeadline = !hidePastDeadlines || !isExpired;
+    
+    return matchesSearch && matchesCategory && matchesDeadline;
   });
 
   const featuredOpportunities = opportunities.filter(opp => opp.featured);
@@ -227,6 +235,17 @@ const Opportunities: React.FC = () => {
               </option>
             ))}
           </select>
+          <button
+            onClick={() => setHidePastDeadlines(!hidePastDeadlines)}
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              hidePastDeadlines 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Calendar size={16} />
+            <span>Hide Past Deadlines</span>
+          </button>
         </div>
       </div>
 
@@ -369,8 +388,15 @@ const Opportunities: React.FC = () => {
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">All Opportunities</h2>
         <div className="space-y-4">
-          {filteredOpportunities.map((opportunity) => (
-            <div key={opportunity.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          {filteredOpportunities.map((opportunity) => {
+            const deadlineDate = new Date(opportunity.deadline);
+            const currentDate = new Date();
+            const isExpired = deadlineDate < currentDate;
+            
+            return (
+              <div key={opportunity.id} className={`bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow ${
+                isExpired ? 'border-red-200 opacity-75' : 'border-gray-200'
+              }`}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-3">
@@ -394,6 +420,16 @@ const Opportunities: React.FC = () => {
                     <div className="flex items-center">
                       <Calendar size={14} className="mr-2" />
                       <span>Due {new Date(opportunity.deadline).toLocaleDateString()}</span>
+                      {(() => {
+                        const deadlineDate = new Date(opportunity.deadline);
+                        const currentDate = new Date();
+                        const isExpired = deadlineDate < currentDate;
+                        return isExpired ? (
+                          <span className="ml-2 bg-red-100 text-red-700 px-2 py-1 rounded text-xs">
+                            Expired
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="flex items-center">
                       <MapPin size={14} className="mr-2" />
@@ -427,12 +463,25 @@ const Opportunities: React.FC = () => {
                     <div className="text-xs text-gray-500">Match Score</div>
                   </div>
                   <div className="space-y-2">
-                    <button 
-                      onClick={() => trackOpportunityInteraction(opportunity, 'applied')}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-sm"
-                    >
-                      Apply Now
-                    </button>
+                    {(() => {
+                      const deadlineDate = new Date(opportunity.deadline);
+                      const currentDate = new Date();
+                      const isExpired = deadlineDate < currentDate;
+                      
+                      return (
+                        <button 
+                          onClick={() => trackOpportunityInteraction(opportunity, isExpired ? 'viewed' : 'applied')}
+                          className={`w-full px-4 py-2 rounded-lg transition-all text-sm ${
+                            isExpired 
+                              ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                              : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
+                          }`}
+                          disabled={isExpired}
+                        >
+                          {isExpired ? 'Application Closed' : 'Apply Now'}
+                        </button>
+                      );
+                    })()}
                     <button 
                       onClick={() => trackOpportunityInteraction(opportunity, 'viewed')}
                       className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center"
@@ -443,8 +492,9 @@ const Opportunities: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
