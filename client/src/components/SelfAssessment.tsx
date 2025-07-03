@@ -354,99 +354,117 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
         })}
       </div>
 
-      {/* Results Dashboard */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white mb-8">
-        <h2 className="text-xl font-semibold mb-4">Your Assessment Results</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white bg-opacity-20 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <Zap size={20} className="mr-2" />
-              <h3 className="font-semibold">Top Strengths</h3>
-            </div>
-            <ul className="text-sm space-y-1 opacity-90">
-              <li>• Leadership (95%)</li>
-              <li>• Creativity (88%)</li>
-              <li>• Communication (92%)</li>
-              <li>• Empathy (85%)</li>
-              <li>• Problem Solving (90%)</li>
-            </ul>
-          </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <Brain size={20} className="mr-2" />
-              <h3 className="font-semibold">Personality Type</h3>
-            </div>
-            <p className="text-sm opacity-90 font-medium">ENFJ - The Protagonist</p>
-            <p className="text-xs opacity-75 mt-1">Natural born leaders, full of passion and charisma. Inspiring and motivating others.</p>
-          </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <Star size={20} className="mr-2" />
-              <h3 className="font-semibold">Core Values</h3>
-            </div>
-            <ul className="text-sm space-y-1 opacity-90">
-              <li>• Making a Difference</li>
-              <li>• Collaboration</li>
-              <li>• Innovation</li>
-              <li>• Personal Growth</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Results */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Strength Categories</h3>
-          <div className="space-y-4">
-            {[
-              { name: 'Leadership', score: 95, color: 'bg-purple-500' },
-              { name: 'Communication', score: 92, color: 'bg-blue-500' },
-              { name: 'Problem Solving', score: 90, color: 'bg-green-500' },
-              { name: 'Creativity', score: 88, color: 'bg-orange-500' },
-              { name: 'Empathy', score: 85, color: 'bg-pink-500' }
-            ].map((strength, index) => (
-              <div key={index}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">{strength.name}</span>
-                  <span className="text-sm font-semibold text-gray-900">{strength.score}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full ${strength.color} transition-all duration-300`}
-                    style={{ width: `${strength.score}%` }}
-                  />
-                </div>
+      {/* Results Dashboard - Only show if assessments completed */}
+      {assessments.some(a => a.completed) && (
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white mb-8">
+          <h2 className="text-xl font-semibold mb-4">Your Assessment Results</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <div className="flex items-center mb-2">
+                <Zap size={20} className="mr-2" />
+                <h3 className="font-semibold">Top Strengths</h3>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Interest Areas</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { name: 'Science & Research', level: 'High' },
-              { name: 'Leadership & Management', level: 'Very High' },
-              { name: 'Arts & Creativity', level: 'High' },
-              { name: 'Technology', level: 'Medium' },
-              { name: 'Social Impact', level: 'Very High' },
-              { name: 'Public Speaking', level: 'High' }
-            ].map((interest, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3">
-                <h4 className="text-sm font-medium text-gray-900">{interest.name}</h4>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  interest.level === 'Very High' ? 'bg-green-100 text-green-600' :
-                  interest.level === 'High' ? 'bg-blue-100 text-blue-600' :
-                  'bg-yellow-100 text-yellow-600'
-                }`}>
-                  {interest.level}
-                </span>
+              <ul className="text-sm space-y-1 opacity-90">
+                <li>• Leadership (95%)</li>
+                <li>• Creativity (88%)</li>
+                <li>• Communication (92%)</li>
+                <li>• Empathy (85%)</li>
+                <li>• Problem Solving (90%)</li>
+              </ul>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <div className="flex items-center mb-2">
+                <Brain size={20} className="mr-2" />
+                <h3 className="font-semibold">Personality Type</h3>
               </div>
-            ))}
+              <p className="text-sm opacity-90 font-medium">ENFJ - The Protagonist</p>
+              <p className="text-xs opacity-75 mt-1">Natural born leaders, full of passion and charisma. Inspiring and motivating others.</p>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <div className="flex items-center mb-2">
+                <Star size={20} className="mr-2" />
+                <h3 className="font-semibold">Core Values</h3>
+              </div>
+              <ul className="text-sm space-y-1 opacity-90">
+                <li>• Making a Difference</li>
+                <li>• Collaboration</li>
+                <li>• Innovation</li>
+                <li>• Personal Growth</li>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Detailed Results - Only show if assessments completed */}
+      {assessments.some(a => a.completed) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Strength Categories</h3>
+            <div className="space-y-4">
+              {[
+                { name: 'Leadership', score: 95, color: 'bg-purple-500' },
+                { name: 'Communication', score: 92, color: 'bg-blue-500' },
+                { name: 'Problem Solving', score: 90, color: 'bg-green-500' },
+                { name: 'Creativity', score: 88, color: 'bg-orange-500' },
+                { name: 'Empathy', score: 85, color: 'bg-pink-500' }
+              ].map((strength, index) => (
+                <div key={index}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">{strength.name}</span>
+                    <span className="text-sm font-semibold text-gray-900">{strength.score}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${strength.color} transition-all duration-300`}
+                      style={{ width: `${strength.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Interest Areas</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { name: 'Science & Research', level: 'High' },
+                { name: 'Leadership & Management', level: 'Very High' },
+                { name: 'Arts & Creativity', level: 'High' },
+                { name: 'Technology', level: 'Medium' },
+                { name: 'Social Impact', level: 'Very High' },
+                { name: 'Public Speaking', level: 'High' }
+              ].map((interest, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-3">
+                  <h4 className="text-sm font-medium text-gray-900">{interest.name}</h4>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    interest.level === 'Very High' ? 'bg-green-100 text-green-600' :
+                    interest.level === 'High' ? 'bg-blue-100 text-blue-600' :
+                    'bg-yellow-100 text-yellow-600'
+                  }`}>
+                    {interest.level}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Results Message - Show when no assessments completed */}
+      {!assessments.some(a => a.completed) && (
+        <div className="bg-gray-50 rounded-xl p-8 text-center">
+          <Brain size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assessment Results Yet</h3>
+          <p className="text-gray-600 mb-4">
+            Complete your first assessment to see your personalized results, strengths, and insights.
+          </p>
+          <div className="text-sm text-gray-500">
+            Start with any assessment above to begin discovering your unique profile.
+          </div>
+        </div>
+      )}
     </div>
   );
 };
