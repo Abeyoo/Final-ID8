@@ -98,7 +98,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold">
-                  {userProfile?.name ? userProfile.name.split(' ').map(n => n[0]).join('') : 'JD'}
+                  {userProfile?.name ? userProfile.name.split(' ').map((n: string) => n[0]).join('') : 'JD'}
                 </span>
               </div>
               <div className="flex-1">

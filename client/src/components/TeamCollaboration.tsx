@@ -3,7 +3,7 @@ import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, 
 import { queryClient } from '@/lib/queryClient';
 
 const TeamCollaboration: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'teams' | 'projects'>('teams');
+
   const [showCreateTeamForm, setShowCreateTeamForm] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
@@ -60,36 +60,7 @@ const TeamCollaboration: React.FC = () => {
     }
   ]);
 
-  const projects = [
-    {
-      id: 1,
-      title: 'Solar Panel Efficiency Study',
-      team: 'Science Fair Team',
-      tasks: [
-        { title: 'Research current technologies', completed: true, assignee: 'John' },
-        { title: 'Build test apparatus', completed: true, assignee: 'Sarah' },
-        { title: 'Collect data samples', completed: false, assignee: 'Mike' },
-        { title: 'Analyze results', completed: false, assignee: 'Lisa' },
-        { title: 'Prepare presentation', completed: false, assignee: 'John' },
-      ],
-      deadline: '2024-05-15',
-      priority: 'high'
-    },
-    {
-      id: 2,
-      title: 'Romeo and Juliet Production',
-      team: 'Drama Club Production',
-      tasks: [
-        { title: 'Cast selection', completed: true, assignee: 'Director' },
-        { title: 'Set design', completed: true, assignee: 'Art Team' },
-        { title: 'Rehearsal scheduling', completed: false, assignee: 'John' },
-        { title: 'Costume preparation', completed: false, assignee: 'Costume Team' },
-        { title: 'Lighting setup', completed: false, assignee: 'Tech Team' },
-      ],
-      deadline: '2024-06-20',
-      priority: 'medium'
-    }
-  ];
+
 
   const handleSkillChange = (index: number, value: string) => {
     setNewTeamForm(prev => ({
@@ -282,31 +253,7 @@ const TeamCollaboration: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
-        <button
-          onClick={() => setActiveTab('teams')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-            activeTab === 'teams'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          My Teams
-        </button>
-        <button
-          onClick={() => setActiveTab('projects')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-            activeTab === 'projects'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Projects
-        </button>
-      </div>
 
-      {activeTab === 'teams' ? (
         <div className="space-y-8">
           {/* My Teams */}
           <div>
@@ -415,64 +362,7 @@ const TeamCollaboration: React.FC = () => {
             </div>
           </div>
         </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Projects */}
-          {projects.map((project) => (
-            <div key={project.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">{project.title}</h3>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>{project.team}</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      project.priority === 'high' ? 'bg-red-100 text-red-600' :
-                      project.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-green-100 text-green-600'
-                    }`}>
-                      {project.priority} priority
-                    </span>
-                    <div className="flex items-center">
-                      <Calendar size={14} className="mr-1" />
-                      <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Tasks</h4>
-                {project.tasks.map((task, taskIndex) => (
-                  <div key={taskIndex} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <CheckCircle
-                      size={16}
-                      className={task.completed ? 'text-green-500' : 'text-gray-300'}
-                    />
-                    <span className={`flex-1 text-sm ${task.completed ? 'text-gray-900 line-through' : 'text-gray-700'}`}>
-                      {task.title}
-                    </span>
-                    <span className="text-xs text-gray-500">{task.assignee}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
-                  {project.tasks.filter(t => t.completed).length} of {project.tasks.length} tasks completed
-                </div>
-                <div className="flex space-x-2">
-                  <button className="px-3 py-1 text-blue-600 text-sm font-medium hover:bg-blue-50 rounded">
-                    View Details
-                  </button>
-                  <button className="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700">
-                    Add Task
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+
 
       {/* Create Team Form Modal */}
       {showCreateTeamForm && (
