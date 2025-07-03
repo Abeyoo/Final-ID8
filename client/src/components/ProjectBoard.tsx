@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, MoreHorizontal, Calendar, Users, MessageSquare, Paperclip, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 const ProjectBoard: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState('science-fair');
+
+  // Check for selected project from Team Collaboration navigation
+  useEffect(() => {
+    const storedProjectId = localStorage.getItem('selectedProjectId');
+    if (storedProjectId) {
+      setSelectedProject(storedProjectId);
+      // Clear the stored ID after using it
+      localStorage.removeItem('selectedProjectId');
+    }
+  }, []);
   const [projects, setProjects] = useState([
     {
       id: 'science-fair',

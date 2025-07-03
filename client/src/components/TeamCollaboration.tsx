@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
 
-const TeamCollaboration: React.FC = () => {
+interface TeamCollaborationProps {
+  onNavigateToProject: (projectId: string) => void;
+}
+
+const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProject }) => {
 
   const [showCreateTeamForm, setShowCreateTeamForm] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
@@ -316,8 +320,9 @@ const TeamCollaboration: React.FC = () => {
                         <button 
                           className="text-blue-600 hover:text-blue-800 font-medium"
                           onClick={() => {
-                            // Navigate to project board - in a real app this would use router
-                            console.log('Navigate to project:', team.project.id);
+                            // Store the selected project ID for the Project Board to pick up
+                            localStorage.setItem('selectedProjectId', team.project.id);
+                            onNavigateToProject(team.project.id);
                           }}
                         >
                           View Project →

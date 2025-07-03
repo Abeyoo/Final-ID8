@@ -145,7 +145,7 @@ function App() {
       case 'development':
         return <DevelopmentPlans />;
       case 'team':
-        return <TeamCollaboration />;
+        return <TeamCollaboration onNavigateToProject={(projectId) => setActiveSection('project-board')} />;
       case 'team-finder':
         return <TeamFinder />;
       case 'project-board':

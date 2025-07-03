@@ -64,6 +64,12 @@ A comprehensive student development platform that helps students with career ass
     - Self assessments now display real completion status instead of hardcoded values
     - Changed "Development Plans" to "Goals" in navigation and main component header for clearer, more direct terminology
     - Updated dashboard to display "Completed Goals" instead of "Active Goals" with real-time tracking from database
+    - **Team-Project Integration**: Connected Team Collaboration with Project Board functionality
+      - Removed projects section from Team Collaboration (saved to saved-code/TeamCollaboration-ProjectsSection.tsx)
+      - Added detailed task management to Project Board with interactive task completion
+      - Connected teams to their specific projects (Science Fair Team → Solar Panel Efficiency Study, Drama Club → Romeo and Juliet Production)
+      - Implemented direct navigation from Team Collaboration "View Project" buttons to Project Board with automatic project selection
+      - Added project cards within team displays showing priority, task progress, and completion status
 
 ## User Preferences
 - Prefers sign-in page as the landing experience instead of onboarding
