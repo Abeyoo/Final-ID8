@@ -338,14 +338,14 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
                       </div>
                     </div>
                     <button 
-                      className="flex items-center text-gray-500 hover:text-blue-600 transition-colors"
+                      className="flex items-center px-3 py-1.5 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-700 rounded-lg transition-all duration-200 border border-gray-200 hover:border-blue-300"
                       onClick={() => {
                         setSelectedTeamForMembers(team);
                         setShowMembersModal(true);
                       }}
                     >
-                      <Users size={16} className="mr-1" />
-                      <span className="text-sm">{team.members}</span>
+                      <Users size={16} className="mr-1.5" />
+                      <span className="text-sm font-medium">{team.members}</span>
                     </button>
                   </div>
                   
