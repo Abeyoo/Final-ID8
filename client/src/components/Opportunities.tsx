@@ -7,6 +7,7 @@ const Opportunities: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAIRecommendations, setShowAIRecommendations] = useState(true);
   const [hidePastDeadlines, setHidePastDeadlines] = useState(false);
+  const [showAllOpportunities, setShowAllOpportunities] = useState(false);
 
   // Fetch AI-powered opportunity recommendations
   const { data: aiRecommendations = [], isLoading: isLoadingAI } = useQuery({
@@ -181,10 +182,178 @@ const Opportunities: React.FC = () => {
       requirements: ['Research skills', 'Public speaking', 'Country/committee assignment'],
       match: 81,
       featured: false
+    },
+    {
+      id: 11,
+      title: 'Google Code-in Contest',
+      type: 'Competition',
+      category: 'Technology',
+      description: 'Contest introducing pre-university students to open source software development.',
+      deadline: '2024-12-01',
+      location: 'Virtual',
+      participants: '1,300+ students',
+      prizes: 'T-shirts + grand prize trip',
+      requirements: ['Ages 13-17', 'Programming skills', 'Open source contribution'],
+      match: 94,
+      featured: false
+    },
+    {
+      id: 12,
+      title: 'Regeneron Science Talent Search',
+      type: 'Competition',
+      category: 'Science',
+      description: 'The nation\'s oldest and most prestigious science and math competition for high school seniors.',
+      deadline: '2024-11-15',
+      location: 'Washington, DC',
+      participants: '1,800+ applicants',
+      prizes: '$250,000 top prize',
+      requirements: ['High school senior', 'Independent research project', '3.0+ GPA'],
+      match: 87,
+      featured: false
+    },
+    {
+      id: 13,
+      title: 'National History Day Competition',
+      type: 'Competition',
+      category: 'Academic',
+      description: 'Students research historical topics related to an annual theme and present findings.',
+      deadline: '2025-03-01',
+      location: 'College Park, MD',
+      participants: '500,000+ students',
+      prizes: 'Scholarships + recognition',
+      requirements: ['Grades 6-12', 'Historical research', 'Theme-based project'],
+      match: 76,
+      featured: false
+    },
+    {
+      id: 14,
+      title: 'Future Business Leaders of America',
+      type: 'Competition',
+      category: 'Business',
+      description: 'Competitive events in business, finance, hospitality, and information technology.',
+      deadline: '2025-04-20',
+      location: 'Multiple locations',
+      participants: '230,000+ members',
+      prizes: 'Scholarships + internships',
+      requirements: ['FBLA membership', 'Business coursework', 'Competition participation'],
+      match: 83,
+      featured: false
+    },
+    {
+      id: 15,
+      title: 'Intel International Science and Engineering Fair',
+      type: 'Competition',
+      category: 'Science',
+      description: 'World\'s largest international pre-college science competition.',
+      deadline: '2024-10-30',
+      location: 'Phoenix, AZ',
+      participants: '1,800+ students from 75+ countries',
+      prizes: '$8 million in prizes',
+      requirements: ['Regional qualification', 'Independent research', 'Science fair project'],
+      match: 91,
+      featured: false
+    },
+    {
+      id: 16,
+      title: 'SkillsUSA Championships',
+      type: 'Competition',
+      category: 'Technology',
+      description: 'National competition showcasing career and technical education skills.',
+      deadline: '2025-05-10',
+      location: 'Atlanta, GA',
+      participants: '6,000+ students',
+      prizes: 'Scholarships + industry recognition',
+      requirements: ['SkillsUSA membership', 'Technical skills', 'State qualification'],
+      match: 79,
+      featured: false
+    },
+    {
+      id: 17,
+      title: 'Poetry Out Loud National Recitation Contest',
+      type: 'Competition',
+      category: 'Arts',
+      description: 'National poetry recitation competition encouraging students to learn about poetry.',
+      deadline: '2024-12-15',
+      location: 'Washington, DC',
+      participants: '365,000+ students',
+      prizes: '$20,000 scholarship',
+      requirements: ['Grades 9-12', 'Poetry memorization', 'State qualification'],
+      match: 72,
+      featured: false
+    },
+    {
+      id: 18,
+      title: 'National Beta Club Convention',
+      type: 'Program',
+      category: 'Leadership',
+      description: 'Leadership development and service organization for high achieving students.',
+      deadline: '2025-06-25',
+      location: 'Multiple cities',
+      participants: '500,000+ members',
+      prizes: 'Scholarships + leadership awards',
+      requirements: ['3.0+ GPA', 'Character standards', 'Service hours'],
+      match: 84,
+      featured: false
+    },
+    {
+      id: 19,
+      title: 'Technology Student Association Competition',
+      type: 'Competition',
+      category: 'Technology',
+      description: 'STEM competitions promoting technological literacy and innovation.',
+      deadline: '2025-03-15',
+      location: 'Multiple states',
+      participants: '200,000+ members',
+      prizes: 'Scholarships + recognition',
+      requirements: ['TSA membership', 'STEM project', 'Regional qualification'],
+      match: 88,
+      featured: false
+    },
+    {
+      id: 20,
+      title: 'National FFA Convention',
+      type: 'Competition',
+      category: 'Agriculture',
+      description: 'Agricultural education and leadership development through hands-on learning.',
+      deadline: '2025-04-05',
+      location: 'Indianapolis, IN',
+      participants: '760,000+ members',
+      prizes: 'Scholarships + career opportunities',
+      requirements: ['FFA membership', 'Agricultural education', 'Leadership project'],
+      match: 73,
+      featured: false
+    },
+    {
+      id: 21,
+      title: 'National Latin Exam Competition',
+      type: 'Competition',
+      category: 'Academic',
+      description: 'Annual Latin examination testing knowledge of Latin language and Roman culture.',
+      deadline: '2024-11-01',
+      location: 'Schools nationwide',
+      participants: '134,000+ students',
+      prizes: 'Recognition + scholarships',
+      requirements: ['Latin coursework', 'School participation', 'Language proficiency'],
+      match: 69,
+      featured: false
+    },
+    {
+      id: 22,
+      title: 'National Geographic Bee',
+      type: 'Competition',
+      category: 'Academic',
+      description: 'Geography competition testing knowledge of world geography and current events.',
+      deadline: '2024-09-30',
+      location: 'Washington, DC',
+      participants: '2.6 million students',
+      prizes: '$50,000 scholarship',
+      requirements: ['Grades 4-8', 'School qualification', 'Geography knowledge'],
+      match: 77,
+      featured: false
     }
   ];
 
-  const categories = ['all', 'Academic', 'Science', 'Leadership', 'Arts', 'Technology', 'Business'];
+  const categories = ['all', 'Academic', 'Science', 'Leadership', 'Arts', 'Technology', 'Business', 'Agriculture'];
 
   const filteredOpportunities = opportunities.filter(opp => {
     const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,6 +368,9 @@ const Opportunities: React.FC = () => {
     
     return matchesSearch && matchesCategory && matchesDeadline;
   });
+
+  // Show only first 6 opportunities initially, or all if showAllOpportunities is true
+  const displayedOpportunities = showAllOpportunities ? filteredOpportunities : filteredOpportunities.slice(0, 6);
 
   const featuredOpportunities = opportunities.filter(opp => opp.featured);
 
@@ -388,7 +560,7 @@ const Opportunities: React.FC = () => {
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">All Opportunities</h2>
         <div className="space-y-4">
-          {filteredOpportunities.map((opportunity) => {
+          {displayedOpportunities.map((opportunity) => {
             const deadlineDate = new Date(opportunity.deadline);
             const currentDate = new Date();
             const isExpired = deadlineDate < currentDate;
@@ -496,6 +668,18 @@ const Opportunities: React.FC = () => {
             );
           })}
         </div>
+        
+        {/* Show More Button */}
+        {filteredOpportunities.length > 6 && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setShowAllOpportunities(!showAllOpportunities)}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+            >
+              {showAllOpportunities ? 'Show Less' : `Show ${filteredOpportunities.length - 6} More Opportunities`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
