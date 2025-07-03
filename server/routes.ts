@@ -198,6 +198,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's assessment completion status
+  app.get("/api/assessments/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get assessment responses to determine completion status
+      const userAssessmentResponses = await db.select().from(assessmentResponses).where(eq(assessmentResponses.userId, userId));
+      
+      // Define minimum questions needed to complete each assessment
+      const assessmentRequirements = {
+        'strengths': 25,
+        'personality': 30,
+        'interests': 20,
+        'values': 15,
+        'learning': 16,
+        'leadership': 22
+      };
+
+      // Calculate completion status for each assessment
+      const completionStatus: Record<string, boolean> = {};
+      for (const [assessmentType, requiredQuestions] of Object.entries(assessmentRequirements)) {
+        const responses = userAssessmentResponses.filter((r: any) => r.assessmentType === assessmentType);
+        completionStatus[assessmentType] = responses.length >= requiredQuestions;
+      }
+
+      res.json(completionStatus);
+    } catch (error) {
+      console.error('Get assessments error:', error);
+      res.status(500).json({ error: 'Failed to get assessment data' });
+    }
+  });
+
   // Get user's personality insights
   app.get("/api/personality/:userId", async (req, res) => {
     try {

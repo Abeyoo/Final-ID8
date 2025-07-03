@@ -141,7 +141,7 @@ function App() {
       case 'dashboard':
         return <Dashboard userProfile={userProfile} />;
       case 'assessment':
-        return <SelfAssessment />;
+        return <SelfAssessment userProfile={userProfile} />;
       case 'development':
         return <DevelopmentPlans />;
       case 'team':

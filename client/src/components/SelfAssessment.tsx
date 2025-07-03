@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Brain, Play, CheckCircle, BarChart3, Lightbulb, Star, Target, Users, Zap } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
-const SelfAssessment: React.FC = () => {
+interface SelfAssessmentProps {
+  userProfile?: any;
+}
+
+const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
   const [activeAssessment, setActiveAssessment] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
 
-  const assessments = [
+  // Fetch user's assessment completion status
+  const { data: completionStatus, isLoading: isLoadingStatus } = useQuery({
+    queryKey: ['/api/assessments', userProfile?.id],
+    enabled: !!userProfile?.id,
+  });
+
+  const assessmentTemplates = [
     {
       id: 'strengths',
       title: 'Strengths Discovery',
       description: 'Identify your top 5 character strengths and natural talents',
       duration: '15 min',
       questions: 25,
-      completed: true,
       icon: Brain,
       color: 'from-purple-500 to-purple-600',
       category: 'Core Assessment'
@@ -24,7 +34,6 @@ const SelfAssessment: React.FC = () => {
       description: 'Understand your personality preferences and working style',
       duration: '20 min',
       questions: 30,
-      completed: false,
       icon: Lightbulb,
       color: 'from-blue-500 to-blue-600',
       category: 'Personality'
@@ -35,7 +44,6 @@ const SelfAssessment: React.FC = () => {
       description: 'Explore your passions and areas of natural curiosity',
       duration: '12 min',
       questions: 20,
-      completed: true,
       icon: Star,
       color: 'from-green-500 to-green-600',
       category: 'Interests'
@@ -46,7 +54,6 @@ const SelfAssessment: React.FC = () => {
       description: 'Discover what matters most to you in life and work',
       duration: '10 min',
       questions: 15,
-      completed: false,
       icon: Target,
       color: 'from-orange-500 to-orange-600',
       category: 'Values'
@@ -57,7 +64,6 @@ const SelfAssessment: React.FC = () => {
       description: 'Discover how you learn best and retain information',
       duration: '8 min',
       questions: 16,
-      completed: true,
       icon: BarChart3,
       color: 'from-indigo-500 to-indigo-600',
       category: 'Learning'
@@ -68,12 +74,17 @@ const SelfAssessment: React.FC = () => {
       description: 'Understand your natural leadership approach and preferences',
       duration: '15 min',
       questions: 22,
-      completed: false,
       icon: Users,
       color: 'from-pink-500 to-pink-600',
       category: 'Leadership'
     }
   ];
+
+  // Combine template data with real completion status
+  const assessments = assessmentTemplates.map(template => ({
+    ...template,
+    completed: completionStatus ? (completionStatus as any)[template.id] || false : false
+  }));
 
   const strengthsQuestions = [
     {
@@ -163,6 +174,27 @@ const SelfAssessment: React.FC = () => {
     setCurrentQuestion(Math.max(0, currentQuestion - 1));
   };
 
+  // Show loading state while fetching completion status
+  if (isLoadingStatus) {
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3 mb-8"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (activeAssessment) {
     const assessment = assessments.find(a => a.id === activeAssessment);
     const questions = activeAssessment === 'strengths' ? strengthsQuestions : personalityQuestions;
@@ -215,7 +247,7 @@ const SelfAssessment: React.FC = () => {
               {currentQ.options.map((option, index) => (
                 <button
                   key={index}
-                  onClick={() => handleAnswer(currentQuestion, activeAssessment === 'personality' ? option.type : index)}
+                  onClick={() => handleAnswer(currentQuestion, activeAssessment === 'personality' ? (option as any).type || index : index)}
                   className="w-full p-4 text-left rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all"
                 >
                   {typeof option === 'string' ? option : option.text}
