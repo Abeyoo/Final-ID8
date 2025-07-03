@@ -13,9 +13,16 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
 
   // Fetch user statistics
   const { data: userStats, isLoading: isStatsLoading } = useQuery({
-    queryKey: ['/api/users', userProfile?.id, 'stats'],
+    queryKey: [`/api/users/${userProfile?.id}/stats`],
     enabled: !!userProfile?.id,
   });
+
+  // Debug log to see what data we're getting
+  useEffect(() => {
+    if (userStats) {
+      console.log('Dashboard userStats:', userStats);
+    }
+  }, [userStats]);
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -53,25 +60,25 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const stats = [
     { 
       label: 'Completed Assessments', 
-      value: isStatsLoading ? '-' : (userStats?.completedAssessments?.toString() || '0'), 
+      value: isStatsLoading ? '-' : ((userStats as any)?.completedAssessments?.toString() || '0'), 
       icon: BookOpen, 
       color: 'from-purple-500 to-purple-600' 
     },
     { 
       label: 'Active Goals', 
-      value: isStatsLoading ? '-' : (userStats?.activeGoals?.toString() || '0'), 
+      value: isStatsLoading ? '-' : ((userStats as any)?.activeGoals?.toString() || '0'), 
       icon: Target, 
       color: 'from-blue-500 to-blue-600' 
     },
     { 
       label: 'Team Projects', 
-      value: isStatsLoading ? '-' : (userStats?.teamProjects?.toString() || '0'), 
+      value: isStatsLoading ? '-' : ((userStats as any)?.teamProjects?.toString() || '0'), 
       icon: Users, 
       color: 'from-green-500 to-green-600' 
     },
     { 
       label: 'Achievements', 
-      value: isStatsLoading ? '-' : (userStats?.achievements?.toString() || '0'), 
+      value: isStatsLoading ? '-' : ((userStats as any)?.achievements?.toString() || '0'), 
       icon: Trophy, 
       color: 'from-orange-500 to-orange-600' 
     },
