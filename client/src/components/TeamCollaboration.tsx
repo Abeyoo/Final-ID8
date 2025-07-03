@@ -32,7 +32,14 @@ const TeamCollaboration: React.FC = () => {
       deadline: '2024-05-15',
       status: 'active',
       category: 'Academic',
-      skills: ['Research', 'Engineering', 'Presentation']
+      skills: ['Research', 'Engineering', 'Presentation'],
+      project: {
+        id: 'science-fair',
+        name: 'Solar Panel Efficiency Study',
+        tasksCompleted: 2,
+        totalTasks: 5,
+        priority: 'high'
+      }
     },
     {
       id: 2,
@@ -44,7 +51,14 @@ const TeamCollaboration: React.FC = () => {
       deadline: '2024-06-20',
       status: 'active',
       category: 'Creative',
-      skills: ['Organization', 'Creative Arts', 'Leadership']
+      skills: ['Organization', 'Creative Arts', 'Leadership'],
+      project: {
+        id: 'drama-production',
+        name: 'Romeo and Juliet Production',
+        tasksCompleted: 2,
+        totalTasks: 5,
+        priority: 'medium'
+      }
     },
     {
       id: 3,
@@ -56,7 +70,8 @@ const TeamCollaboration: React.FC = () => {
       deadline: '2024-04-30',
       status: 'active',
       category: 'Academic',
-      skills: ['Mathematics', 'Problem Solving', 'Competition']
+      skills: ['Mathematics', 'Problem Solving', 'Competition'],
+      project: null // This team doesn't have a specific project board
     }
   ]);
 
@@ -105,7 +120,8 @@ const TeamCollaboration: React.FC = () => {
       deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       status: 'active' as const,
       category: newTeamForm.category,
-      skills: skills.length > 0 ? skills : ['General']
+      skills: skills.length > 0 ? skills : ['General'],
+      project: null // New teams don't start with a project
     };
 
     setTeams(prev => [...prev, newTeam]);
@@ -280,6 +296,35 @@ const TeamCollaboration: React.FC = () => {
                   </div>
                   
                   <p className="text-gray-600 text-sm mb-4">{team.description}</p>
+                  
+                  {/* Connected Project */}
+                  {team.project && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-medium text-gray-800">Current Project</h4>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          team.project.priority === 'high' ? 'bg-red-100 text-red-600' :
+                          team.project.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-green-100 text-green-600'
+                        }`}>
+                          {team.project.priority}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{team.project.name}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-600">
+                        <span>{team.project.tasksCompleted}/{team.project.totalTasks} tasks completed</span>
+                        <button 
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          onClick={() => {
+                            // Navigate to project board - in a real app this would use router
+                            console.log('Navigate to project:', team.project.id);
+                          }}
+                        >
+                          View Project →
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
