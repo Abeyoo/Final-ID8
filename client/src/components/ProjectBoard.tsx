@@ -183,7 +183,7 @@ const ProjectBoard: React.FC = () => {
         </div>
         <button className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all">
           <Plus size={20} className="mr-2" />
-          New Task
+          New Project
         </button>
       </div>
 
