@@ -3,8 +3,7 @@ import { Plus, MoreHorizontal, Calendar, Users, MessageSquare, Paperclip, CheckC
 
 const ProjectBoard: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState('science-fair');
-
-  const projects = [
+  const [projects, setProjects] = useState([
     {
       id: 'science-fair',
       name: 'Solar Panel Efficiency Study',
@@ -12,7 +11,15 @@ const ProjectBoard: React.FC = () => {
       team: ['John Doe', 'Sarah Chen', 'Mike Johnson', 'Lisa Wang'],
       deadline: '2024-05-15',
       progress: 65,
-      status: 'active'
+      status: 'active',
+      tasks: [
+        { title: 'Research current technologies', completed: true, assignee: 'John Doe' },
+        { title: 'Build test apparatus', completed: true, assignee: 'Sarah Chen' },
+        { title: 'Collect data samples', completed: false, assignee: 'Mike Johnson' },
+        { title: 'Analyze results', completed: false, assignee: 'Lisa Wang' },
+        { title: 'Prepare presentation', completed: false, assignee: 'John Doe' },
+      ],
+      priority: 'high'
     },
     {
       id: 'drama-production',
@@ -21,9 +28,17 @@ const ProjectBoard: React.FC = () => {
       team: ['John Doe', 'Emma Thompson', 'Alex Rivera'],
       deadline: '2024-06-20',
       progress: 40,
-      status: 'active'
+      status: 'active',
+      tasks: [
+        { title: 'Cast selection', completed: true, assignee: 'Director' },
+        { title: 'Set design', completed: true, assignee: 'Art Team' },
+        { title: 'Rehearsal scheduling', completed: false, assignee: 'John Doe' },
+        { title: 'Costume preparation', completed: false, assignee: 'Costume Team' },
+        { title: 'Lighting setup', completed: false, assignee: 'Tech Team' },
+      ],
+      priority: 'medium'
     }
-  ];
+  ]);
 
   const kanbanColumns = [
     {
@@ -127,6 +142,13 @@ const ProjectBoard: React.FC = () => {
   ];
 
   const currentProject = projects.find(p => p.id === selectedProject);
+  
+  // Calculate dynamic progress based on completed tasks
+  const getProjectProgress = (project: any) => {
+    if (!project.tasks || project.tasks.length === 0) return 0;
+    const completedTasks = project.tasks.filter((task: any) => task.completed).length;
+    return Math.round((completedTasks / project.tasks.length) * 100);
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -212,11 +234,88 @@ const ProjectBoard: React.FC = () => {
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div
                       className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-                      style={{ width: `${currentProject.progress}%` }}
+                      style={{ width: `${getProjectProgress(currentProject)}%` }}
                     />
                   </div>
-                  <span className="text-sm text-gray-600">{currentProject.progress}%</span>
+                  <span className="text-sm text-gray-600">{getProjectProgress(currentProject)}%</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Tasks Section */}
+      {currentProject && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Project Tasks</h3>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              currentProject.priority === 'high' ? 'bg-red-100 text-red-600' :
+              currentProject.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+              'bg-green-100 text-green-600'
+            }`}>
+              {currentProject.priority} priority
+            </span>
+          </div>
+          
+          <div className="space-y-3">
+            {currentProject.tasks.map((task, index) => (
+              <div key={index} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <button 
+                  className="hover:scale-110 transition-transform"
+                  onClick={() => {
+                    // Toggle task completion
+                    setProjects(prevProjects => 
+                      prevProjects.map(p => 
+                        p.id === currentProject.id 
+                          ? {
+                              ...p,
+                              tasks: p.tasks.map((t, i) => 
+                                i === index ? { ...t, completed: !t.completed } : t
+                              )
+                            }
+                          : p
+                      )
+                    );
+                  }}
+                >
+                  <CheckCircle
+                    size={20}
+                    className={task.completed ? 'text-green-500' : 'text-gray-300 hover:text-gray-400'}
+                  />
+                </button>
+                <div className="flex-1">
+                  <span className={`text-sm font-medium ${
+                    task.completed ? 'text-gray-500 line-through' : 'text-gray-900'
+                  }`}>
+                    {task.title}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-500">{task.assignee}</span>
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-semibold">
+                      {task.assignee.split(' ').map((n: string) => n[0]).join('')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">
+                Progress: {currentProject.tasks.filter(t => t.completed).length}/{currentProject.tasks.length} tasks completed
+              </span>
+              <div className="flex space-x-2">
+                <button className="px-4 py-2 text-sm bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">
+                  Add Task
+                </button>
+                <button className="px-4 py-2 text-sm bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors">
+                  View Details
+                </button>
               </div>
             </div>
           </div>
