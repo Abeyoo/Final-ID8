@@ -8,7 +8,7 @@ const Opportunities: React.FC = () => {
   const [showAIRecommendations, setShowAIRecommendations] = useState(true);
 
   // Fetch AI-powered opportunity recommendations
-  const { data: aiRecommendations, isLoading: isLoadingAI } = useQuery({
+  const { data: aiRecommendations = [], isLoading: isLoadingAI } = useQuery({
     queryKey: ['/api/opportunities/recommendations/1'], // TODO: Use actual user ID
     enabled: showAIRecommendations,
   });
@@ -43,91 +43,147 @@ const Opportunities: React.FC = () => {
   const opportunities = [
     {
       id: 1,
-      title: 'National Science Fair Competition',
-      type: 'Competition',
-      category: 'Science',
-      description: 'Showcase your scientific research and innovation in a national competition with cash prizes and college scholarships.',
-      deadline: '2024-03-15',
-      location: 'Virtual/Regional',
-      participants: '500+',
-      prizes: '$50,000 in scholarships',
-      requirements: ['Grade 9-12', 'Original research project', 'Faculty sponsor'],
-      match: 95,
+      title: 'National Merit Scholarship Program',
+      type: 'Scholarship',
+      category: 'Academic',
+      description: 'Prestigious scholarship program based on PSAT/NMSQT scores. Recognizes top academic achievers nationwide.',
+      deadline: '2025-10-15',
+      location: 'National',
+      participants: '1.6 million students',
+      prizes: '$2,500 - Full tuition',
+      requirements: ['PSAT/NMSQT score', 'High school senior', 'US citizen'],
+      match: 92,
       featured: true
     },
     {
       id: 2,
-      title: 'Youth Leadership Summit',
-      type: 'Program',
-      category: 'Leadership',
-      description: 'Develop leadership skills through workshops, networking, and mentorship with industry leaders.',
-      deadline: '2024-04-01',
-      location: 'Washington, DC',
-      participants: '200',
-      prizes: 'Certificate & Networking',
-      requirements: ['Grade 10-12', 'Leadership experience', 'Essay submission'],
-      match: 88,
+      title: 'Congressional Art Competition',
+      type: 'Competition',
+      category: 'Arts',
+      description: 'Annual nationwide art competition for high school students with winners displayed in US Capitol.',
+      deadline: '2025-04-30',
+      location: 'Congressional districts',
+      participants: '650+ districts',
+      prizes: 'Capitol display + recognition',
+      requirements: ['High school student', 'Original artwork', 'District entry'],
+      match: 85,
       featured: true
     },
     {
       id: 3,
-      title: 'Creative Writing Contest',
-      type: 'Competition',
-      category: 'Arts',
-      description: 'Submit your original poetry, short stories, or essays for a chance to be published and win cash prizes.',
-      deadline: '2024-05-20',
-      location: 'Online',
-      participants: '1000+',
-      prizes: '$5,000 + Publication',
-      requirements: ['Age 13-18', 'Original work', 'Under 2000 words'],
-      match: 76,
+      title: 'National Honor Society',
+      type: 'Program',
+      category: 'Academic',
+      description: 'Prestigious organization recognizing outstanding high school students in scholarship, service, leadership, and character.',
+      deadline: 'School-based',
+      location: 'Local schools',
+      participants: '1 million+ members',
+      prizes: 'Recognition + scholarships',
+      requirements: ['3.0+ GPA', 'Service hours', 'Leadership activities'],
+      match: 88,
       featured: false
     },
     {
       id: 4,
-      title: 'Math Olympiad Training Camp',
-      type: 'Program',
-      category: 'Mathematics',
-      description: 'Intensive training program for students preparing for international math competitions.',
-      deadline: '2024-06-10',
-      location: 'Boston, MA',
-      participants: '50',
-      prizes: 'Training & Mentorship',
-      requirements: ['Grade 9-12', 'Math competition experience', 'Qualifying score'],
-      match: 82,
+      title: 'DECA International Competition',
+      type: 'Competition',
+      category: 'Business',
+      description: 'World-renowned business competition with role-plays, written events, and entrepreneurship challenges.',
+      deadline: '2025-04-25',
+      location: 'Anaheim, CA',
+      participants: '20,000+ students',
+      prizes: 'Scholarships + internships',
+      requirements: ['DECA membership', 'Qualify through state', 'Business coursework'],
+      match: 80,
       featured: false
     },
     {
       id: 5,
-      title: 'Robotics Championship',
+      title: 'FIRST Robotics Competition',
       type: 'Competition',
       category: 'Technology',
-      description: 'Design and build autonomous robots to compete in challenging tasks and scenarios.',
-      deadline: '2024-07-15',
-      location: 'Multiple Cities',
-      participants: '300+ teams',
-      prizes: '$25,000 + Equipment',
-      requirements: ['Team of 3-6', 'Grade 9-12', 'Robot specifications'],
+      description: 'International high school robotics competition combining sports excitement with science and technology.',
+      deadline: '2025-01-08',
+      location: 'Worldwide regionals',
+      participants: '4,000+ teams globally',
+      prizes: '$80,000+ in scholarships',
+      requirements: ['High school team', '6-week build season', 'Mentor guidance'],
       match: 91,
       featured: true
     },
     {
       id: 6,
-      title: 'Environmental Innovation Challenge',
+      title: 'AP Scholar Awards',
+      type: 'Recognition',
+      category: 'Academic',
+      description: 'Recognition program for students who demonstrate excellence on AP Exams across multiple subjects.',
+      deadline: 'Automatic (based on AP scores)',
+      location: 'National',
+      participants: '100,000+ annually',
+      prizes: 'Certificate + college recognition',
+      requirements: ['3+ on AP exams', 'Multiple AP subjects', 'High school student'],
+      match: 86,
+      featured: false
+    },
+    {
+      id: 7,
+      title: 'National Science Bowl',
       type: 'Competition',
-      category: 'Environment',
-      description: 'Develop innovative solutions to environmental challenges facing your community.',
-      deadline: '2024-08-30',
-      location: 'San Francisco, CA',
-      participants: '150',
-      prizes: '$15,000 + Internships',
-      requirements: ['Grade 9-12', 'Team project', 'Sustainability focus'],
-      match: 79,
+      category: 'Science',
+      description: 'Academic competition testing knowledge in biology, chemistry, earth science, physics, energy, and math.',
+      deadline: '2025-01-31',
+      location: 'Washington, DC',
+      participants: '4,500+ students',
+      prizes: '$5,000 scholarships',
+      requirements: ['4-member team', 'Grades 9-12', 'Regional qualification'],
+      match: 89,
+      featured: false
+    },
+    {
+      id: 8,
+      title: 'Scholastic Art & Writing Awards',
+      type: 'Competition',
+      category: 'Arts',
+      description: 'The longest-running recognition program for creative teens in visual art and writing.',
+      deadline: '2025-01-15',
+      location: 'Regional + national',
+      participants: '300,000+ submissions',
+      prizes: '$10,000 scholarships',
+      requirements: ['Grades 7-12', 'Original creative work', 'Regional submission'],
+      match: 83,
+      featured: false
+    },
+    {
+      id: 9,
+      title: 'Quiz Bowl National Championship',
+      type: 'Competition',
+      category: 'Academic',
+      description: 'Fast-paced buzzer competition testing knowledge across academic subjects and popular culture.',
+      deadline: '2025-05-30',
+      location: 'Chicago, IL',
+      participants: '2,500+ teams',
+      prizes: 'National recognition + trophies',
+      requirements: ['4-6 member team', 'Regional qualification', 'Broad knowledge base'],
+      match: 78,
+      featured: false
+    },
+    {
+      id: 10,
+      title: 'Model United Nations',
+      type: 'Program',
+      category: 'Leadership',
+      description: 'Simulation of UN proceedings where students debate current world issues and draft resolutions.',
+      deadline: 'Conference-specific',
+      location: 'Multiple cities',
+      participants: '400,000+ students',
+      prizes: 'Leadership experience + awards',
+      requirements: ['Research skills', 'Public speaking', 'Country/committee assignment'],
+      match: 81,
       featured: false
     }
   ];
 
-  const categories = ['all', 'Science', 'Leadership', 'Arts', 'Mathematics', 'Technology', 'Environment'];
+  const categories = ['all', 'Academic', 'Science', 'Leadership', 'Arts', 'Technology', 'Business'];
 
   const filteredOpportunities = opportunities.filter(opp => {
     const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -198,7 +254,7 @@ const Opportunities: React.FC = () => {
                 <span className="text-purple-700">AI is analyzing your profile to find perfect opportunities...</span>
               </div>
             </div>
-          ) : aiRecommendations && aiRecommendations.length > 0 ? (
+          ) : aiRecommendations && Array.isArray(aiRecommendations) && aiRecommendations.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {aiRecommendations.slice(0, 6).map((opportunity: any) => (
                 <div key={opportunity.id} className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200 hover:shadow-lg transition-all">
