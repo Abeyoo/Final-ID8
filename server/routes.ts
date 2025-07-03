@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { personalityAI } from "./personalityAI";
 import { db } from "./db";
-import { assessmentResponses, goals, achievements, teamInteractions } from "@shared/schema";
+import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -79,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const [assessmentCount] = await db.select({ count: sql`count(*)` }).from(assessmentResponses).where(eq(assessmentResponses.userId, userId));
       const [goalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(eq(goals.userId, userId));
-      const [achievementCount] = await db.select({ count: sql`count(*)` }).from(achievements).where(eq(achievements.userId, userId));
+      const [achievementCount] = await db.select({ count: sql`count(*)` }).from(achievementsTable).where(eq(achievementsTable.userId, userId));
       const [teamCount] = await db.select({ count: sql`count(distinct team_id)` }).from(teamInteractions).where(eq(teamInteractions.userId, userId));
       
       return {
@@ -195,6 +195,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Manual personality analysis error:', error);
       res.status(500).json({ error: 'Failed to analyze personality' });
+    }
+  });
+
+  // Get user's dashboard statistics
+  app.get("/api/users/:userId/stats", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get all user data for statistics
+      const [
+        userAssessmentResponses,
+        userGoals,
+        userAchievements,
+        userTeamInteractions
+      ] = await Promise.all([
+        db.select().from(assessmentResponses).where(eq(assessmentResponses.userId, userId)),
+        db.select().from(goals).where(eq(goals.userId, userId)),
+        db.select().from(achievementsTable).where(eq(achievementsTable.userId, userId)),
+        db.select().from(teamInteractions).where(eq(teamInteractions.userId, userId))
+      ]) as [any[], any[], any[], any[]];
+
+      // Calculate completed assessments
+      const assessmentRequirements = {
+        'strengths': 25,
+        'personality': 30,
+        'interests': 20,
+        'values': 15,
+        'learning': 16,
+        'leadership': 22
+      };
+
+      let completedAssessments = 0;
+      for (const [assessmentType, requiredQuestions] of Object.entries(assessmentRequirements)) {
+        const responses = userAssessmentResponses.filter((r: any) => r.assessmentType === assessmentType);
+        if (responses.length >= requiredQuestions) {
+          completedAssessments++;
+        }
+      }
+
+      // Calculate active goals (not completed)
+      const activeGoals = userGoals.filter((goal: any) => !goal.completed).length;
+
+      // Calculate team projects (unique team IDs)
+      const teamProjects = new Set(userTeamInteractions.map((interaction: any) => interaction.teamId)).size;
+
+      // Total achievements
+      const totalAchievements = userAchievements.length;
+
+      res.json({
+        completedAssessments,
+        activeGoals,
+        teamProjects,
+        achievements: totalAchievements
+      });
+    } catch (error) {
+      console.error('Get user stats error:', error);
+      res.status(500).json({ error: 'Failed to get user statistics' });
     }
   });
 

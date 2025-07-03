@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Target, Users, Trophy, Brain, Zap, TrendingUp, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 interface DashboardProps {
   userProfile?: any;
@@ -9,6 +10,12 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const [personalityData, setPersonalityData] = useState<any>(null);
   const [percentileData, setPercentileData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch user statistics
+  const { data: userStats, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['/api/users', userProfile?.id, 'stats'],
+    enabled: !!userProfile?.id,
+  });
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -46,25 +53,25 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const stats = [
     { 
       label: 'Completed Assessments', 
-      value: userProfile?.completedAssessments?.toString() || '0', 
+      value: isStatsLoading ? '-' : (userStats?.completedAssessments?.toString() || '0'), 
       icon: BookOpen, 
       color: 'from-purple-500 to-purple-600' 
     },
     { 
       label: 'Active Goals', 
-      value: userProfile?.activeGoals?.toString() || '0', 
+      value: isStatsLoading ? '-' : (userStats?.activeGoals?.toString() || '0'), 
       icon: Target, 
       color: 'from-blue-500 to-blue-600' 
     },
     { 
       label: 'Team Projects', 
-      value: userProfile?.teamProjects?.toString() || '0', 
+      value: isStatsLoading ? '-' : (userStats?.teamProjects?.toString() || '0'), 
       icon: Users, 
       color: 'from-green-500 to-green-600' 
     },
     { 
       label: 'Achievements', 
-      value: userProfile?.achievements?.toString() || '0', 
+      value: isStatsLoading ? '-' : (userStats?.achievements?.toString() || '0'), 
       icon: Trophy, 
       color: 'from-orange-500 to-orange-600' 
     },
