@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
-import { Trophy, Search, Filter, MapPin, Calendar, Users, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Search, Filter, MapPin, Calendar, Users, ExternalLink, Brain, Sparkles } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const Opportunities: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showAIRecommendations, setShowAIRecommendations] = useState(true);
+
+  // Fetch AI-powered opportunity recommendations
+  const { data: aiRecommendations, isLoading: isLoadingAI } = useQuery({
+    queryKey: ['/api/opportunities/recommendations/1'], // TODO: Use actual user ID
+    enabled: showAIRecommendations,
+  });
 
   const trackOpportunityInteraction = async (
     opportunity: any, 
@@ -165,6 +173,88 @@ const Opportunities: React.FC = () => {
           </select>
         </div>
       </div>
+
+      {/* AI Recommendations */}
+      {showAIRecommendations && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Brain size={24} className="text-purple-600" />
+              <h2 className="text-xl font-semibold text-gray-900">AI-Personalized For You</h2>
+              <Sparkles size={16} className="text-purple-600" />
+            </div>
+            <button
+              onClick={() => setShowAIRecommendations(false)}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Hide Recommendations
+            </button>
+          </div>
+          
+          {isLoadingAI ? (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                <span className="text-purple-700">AI is analyzing your profile to find perfect opportunities...</span>
+              </div>
+            </div>
+          ) : aiRecommendations && aiRecommendations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {aiRecommendations.slice(0, 6).map((opportunity: any) => (
+                <div key={opportunity.id} className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200 hover:shadow-lg transition-all">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                        <Sparkles size={16} className="text-white" />
+                      </div>
+                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-medium">
+                        AI Match
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-purple-600">{opportunity.match}%</div>
+                      <div className="text-xs text-purple-500">Match</div>
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-semibold text-gray-900 mb-2">{opportunity.title}</h3>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{opportunity.category}</span>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{opportunity.type}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{opportunity.description}</p>
+                  
+                  <div className="space-y-2 text-xs text-gray-500 mb-4">
+                    <div className="flex items-center">
+                      <Calendar size={12} className="mr-1" />
+                      <span>Due: {new Date(opportunity.deadline).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin size={12} className="mr-1" />
+                      <span>{opportunity.location}</span>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => trackOpportunityInteraction(opportunity, 'applied')}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium"
+                  >
+                    Apply Now
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl p-6 text-center">
+              <Brain size={48} className="mx-auto text-gray-400 mb-3" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Building Your Profile</h3>
+              <p className="text-gray-600">
+                Complete assessments and set goals to get personalized AI recommendations.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Featured Opportunities */}
       <div className="mb-8">

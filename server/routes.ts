@@ -2,9 +2,82 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { personalityAI } from "./personalityAI";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { db } from "./db";
 import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions } from "@shared/schema";
 import { eq, sql, and, or, isNull } from "drizzle-orm";
+import * as schema from "@shared/schema";
+
+// AI-powered opportunity recommendation function
+async function generateOpportunityRecommendations(personalityData: any, userStats: any, userId: number) {
+  try {
+    // Get user's goals and achievements for context
+    const userGoals = await db.select().from(schema.goals).where(eq(schema.goals.userId, userId));
+    const userAchievements = await db.select().from(schema.achievements).where(eq(schema.achievements.userId, userId));
+    
+    // Create comprehensive user profile for AI analysis
+    const userProfile = {
+      personalityType: personalityData.personalityType,
+      personalityScores: personalityData.personalityScores,
+      confidence: personalityData.confidence,
+      stats: userStats,
+      goals: userGoals.map(g => ({ title: g.title, category: g.category, completed: g.completed })),
+      achievements: userAchievements.map(a => ({ title: a.title, type: a.achievementType, description: a.description }))
+    };
+
+    const prompt = `You are an AI career counselor specializing in finding opportunities for high school students. Based on this student's profile, recommend 8-10 personalized opportunities (competitions, programs, internships, scholarships, etc.).
+
+Student Profile:
+- Personality Type: ${userProfile.personalityType}
+- Personality Strengths: ${Object.entries(userProfile.personalityScores)
+  .sort((a, b) => (b[1] as number) - (a[1] as number))
+  .slice(0, 3)
+  .map(([type, score]) => `${type} (${score}%)`)
+  .join(', ')}
+- Current Stats: ${userProfile.stats.activeGoals} active goals, ${userProfile.stats.completedGoals} completed goals, ${userProfile.stats.achievements} achievements
+- Goals: ${userProfile.goals.map(g => g.title).join(', ') || 'None set yet'}
+- Achievements: ${userProfile.achievements.map(a => a.title).join(', ') || 'None yet'}
+
+For each opportunity, provide:
+- Title (specific and real)
+- Type (Competition, Program, Scholarship, Internship, etc.)
+- Category (Science, Technology, Arts, Leadership, etc.)
+- Description (1-2 sentences)
+- Deadline (realistic future date in YYYY-MM-DD format)
+- Location (or "Virtual" if online)
+- Match percentage (how well it fits this student, 70-98%)
+- Requirements (array of 2-3 realistic requirements)
+- Prizes/Benefits (if applicable)
+
+Focus on real, achievable opportunities that match their personality type and interests. Ensure variety across different categories. Respond in JSON format: {"opportunities": [array of opportunity objects]}`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+    });
+
+    const aiRecommendations = JSON.parse(response.choices[0].message.content || '{"opportunities": []}');
+    
+    // Add unique IDs and ensure proper formatting
+    const opportunities = (aiRecommendations.opportunities || []).map((opp: any, index: number) => ({
+      id: Date.now() + index,
+      ...opp,
+      featured: opp.match >= 90,
+      aiGenerated: true,
+      recommendedAt: new Date().toISOString()
+    }));
+
+    return opportunities;
+  } catch (error) {
+    console.error('Error generating AI recommendations:', error);
+    
+    // Return empty array if AI fails - let frontend handle this gracefully
+    return [];
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
@@ -393,6 +466,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Recalculate percentiles error:', error);
       res.status(500).json({ error: 'Failed to recalculate percentiles' });
+    }
+  });
+
+  // AI-powered opportunity recommendations
+  app.get("/api/opportunities/recommendations/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Get user's personality analysis and stats
+      const personalityData = await personalityAI.analyzeUserPersonality(userId);
+      const userStats = await getUserStats(userId);
+      
+      // Use AI to generate personalized opportunity recommendations
+      const recommendations = await generateOpportunityRecommendations(
+        personalityData,
+        userStats,
+        userId
+      );
+      
+      res.json(recommendations);
+    } catch (error) {
+      console.error('Get opportunity recommendations error:', error);
+      res.status(500).json({ error: 'Failed to get opportunity recommendations' });
     }
   });
 
