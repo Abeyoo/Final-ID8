@@ -29,7 +29,7 @@ interface NavigationProps {
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'assessment', label: 'Self Assessment', icon: Brain },
-  { id: 'development', label: 'Development Plans', icon: Target },
+  { id: 'development', label: 'Goals', icon: Target },
   { id: 'team', label: 'Team Collaboration', icon: Users },
   { id: 'team-finder', label: 'Team Finder', icon: Search },
   { id: 'project-board', label: 'Project Board', icon: Kanban },

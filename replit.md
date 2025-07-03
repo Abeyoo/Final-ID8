@@ -13,7 +13,7 @@ A comprehensive student development platform that helps students with career ass
 ## Key Features
 - Sign-in/Authentication system (now landing page)
 - Student onboarding flow
-- Skills assessment and development planning
+- Skills assessment and goal tracking
 - Team collaboration tools
 - Project board and team finder
 - AI chat assistant
@@ -62,6 +62,8 @@ A comprehensive student development platform that helps students with career ass
     - Implemented dynamic assessment completion status based on actual user database responses
     - Fixed TypeScript errors and authentication redirect issues from ID8 to Thinkle rebranding
     - Self assessments now display real completion status instead of hardcoded values
+    - Changed "Development Plans" to "Goals" in navigation and main component header for clearer, more direct terminology
+    - Updated dashboard to display "Completed Goals" instead of "Active Goals" with real-time tracking from database
 
 ## User Preferences
 - Prefers sign-in page as the landing experience instead of onboarding
