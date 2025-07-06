@@ -15,6 +15,7 @@ import AIChat from './components/AIChat';
 import Portfolio from './components/Portfolio';
 import Onboarding from './components/Onboarding';
 import AuthChoice from './components/AuthChoice';
+import SignUp from './components/SignUp';
 
 type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'schedule' | 'community' | 'team-finder' | 'project-board' | 'ai-chat' | 'portfolio';
 
@@ -131,7 +132,7 @@ function App() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'auth-choice'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'auth-choice' | 'signup'>('landing');
   const [isNewUser, setIsNewUser] = useState(false);
 
   // Check if new user needs onboarding (no completed assessments and no personality type)
@@ -153,12 +154,20 @@ function App() {
   };
 
   const handleCreateAccount = () => {
-    setIsNewUser(true);
-    window.location.href = '/api/login';
+    setCurrentView('signup');
   };
 
   const handleBackToLanding = () => {
     setCurrentView('landing');
+  };
+
+  const handleSignUpSuccess = (profile: any) => {
+    setIsNewUser(true);
+    setShowOnboarding(true);
+  };
+
+  const handleBackToAuthChoice = () => {
+    setCurrentView('auth-choice');
   };
 
   if (isLoading) {
@@ -175,6 +184,14 @@ function App() {
   }
 
   if (!isAuthenticated) {
+    if (currentView === 'signup') {
+      return (
+        <SignUp
+          onSignUp={handleSignUpSuccess}
+          onBackToSignIn={handleBackToAuthChoice}
+        />
+      );
+    }
     if (currentView === 'auth-choice') {
       return (
         <AuthChoice
