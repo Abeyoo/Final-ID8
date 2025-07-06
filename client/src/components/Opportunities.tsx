@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Search, Filter, MapPin, Calendar, Users, ExternalLink, Brain, Sparkles } from 'lucide-react';
+import { Trophy, Search, Filter, MapPin, Calendar, Users, ExternalLink, Brain, Sparkles, X, Clock, Award, CheckCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 const Opportunities: React.FC = () => {
@@ -8,6 +8,7 @@ const Opportunities: React.FC = () => {
   const [showAIRecommendations, setShowAIRecommendations] = useState(true);
   const [hidePastDeadlines, setHidePastDeadlines] = useState(false);
   const [showAllOpportunities, setShowAllOpportunities] = useState(false);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<any>(null);
 
   // Fetch AI-powered opportunity recommendations
   const { data: aiRecommendations = [], isLoading: isLoadingAI } = useQuery({
@@ -42,6 +43,32 @@ const Opportunities: React.FC = () => {
     }
   };
 
+  const handleApplyNow = async (opportunity: any) => {
+    await trackOpportunityInteraction(opportunity, 'applied');
+    
+    // Open application URL if available
+    if (opportunity.applicationUrl) {
+      window.open(opportunity.applicationUrl, '_blank');
+    } else if (opportunity.url) {
+      window.open(opportunity.url, '_blank');
+    } else {
+      // Show alert for opportunities without URLs
+      alert(`To apply for ${opportunity.title}, please contact your school counselor or search for "${opportunity.title}" online.`);
+    }
+  };
+
+  const handleLearnMore = async (opportunity: any) => {
+    await trackOpportunityInteraction(opportunity, 'viewed');
+    
+    // Open info URL if available
+    if (opportunity.url) {
+      window.open(opportunity.url, '_blank');
+    } else {
+      // Show detailed modal for opportunities without URLs
+      setSelectedOpportunity(opportunity);
+    }
+  };
+
   const opportunities = [
     {
       id: 1,
@@ -55,7 +82,9 @@ const Opportunities: React.FC = () => {
       prizes: '$2,500 - Full tuition',
       requirements: ['PSAT/NMSQT score', 'High school senior', 'US citizen'],
       match: 92,
-      featured: true
+      featured: true,
+      url: 'https://www.nationalmerit.org/',
+      applicationUrl: 'https://www.nationalmerit.org/s/1758/interior.aspx?sid=1758&gid=2&pgid=424'
     },
     {
       id: 2,
@@ -69,7 +98,9 @@ const Opportunities: React.FC = () => {
       prizes: 'Capitol display + recognition',
       requirements: ['High school student', 'Original artwork', 'District entry'],
       match: 85,
-      featured: true
+      featured: true,
+      url: 'https://www.house.gov/representatives/find-your-representative',
+      applicationUrl: 'https://www.house.gov/representatives/find-your-representative'
     },
     {
       id: 3,
@@ -97,7 +128,9 @@ const Opportunities: React.FC = () => {
       prizes: 'Scholarships + internships',
       requirements: ['DECA membership', 'Qualify through state', 'Business coursework'],
       match: 80,
-      featured: false
+      featured: false,
+      url: 'https://www.deca.org/',
+      applicationUrl: 'https://www.deca.org/high-school-division/start-chapter/'
     },
     {
       id: 5,
@@ -111,7 +144,9 @@ const Opportunities: React.FC = () => {
       prizes: '$80,000+ in scholarships',
       requirements: ['High school team', '6-week build season', 'Mentor guidance'],
       match: 91,
-      featured: true
+      featured: true,
+      url: 'https://www.firstinspires.org/robotics/frc',
+      applicationUrl: 'https://www.firstinspires.org/robotics/frc/how-to-start-a-team'
     },
     {
       id: 6,
@@ -139,7 +174,9 @@ const Opportunities: React.FC = () => {
       prizes: '$5,000 scholarships',
       requirements: ['4-member team', 'Grades 9-12', 'Regional qualification'],
       match: 89,
-      featured: false
+      featured: false,
+      url: 'https://science.osti.gov/wdts/nsb',
+      applicationUrl: 'https://science.osti.gov/wdts/nsb/High-School-Science-Bowl/Resources/How-to-Start-a-Team'
     },
     {
       id: 8,
@@ -642,7 +679,7 @@ const Opportunities: React.FC = () => {
                       
                       return (
                         <button 
-                          onClick={() => trackOpportunityInteraction(opportunity, isExpired ? 'viewed' : 'applied')}
+                          onClick={() => isExpired ? handleLearnMore(opportunity) : handleApplyNow(opportunity)}
                           className={`w-full px-4 py-2 rounded-lg transition-all text-sm ${
                             isExpired 
                               ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
@@ -655,7 +692,7 @@ const Opportunities: React.FC = () => {
                       );
                     })()}
                     <button 
-                      onClick={() => trackOpportunityInteraction(opportunity, 'viewed')}
+                      onClick={() => handleLearnMore(opportunity)}
                       className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center"
                     >
                       <ExternalLink size={14} className="mr-1" />
@@ -700,6 +737,117 @@ const Opportunities: React.FC = () => {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Detailed Opportunity Modal */}
+        {selectedOpportunity && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedOpportunity.title}</h2>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full">{selectedOpportunity.type}</span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">{selectedOpportunity.category}</span>
+                      <span className="text-green-600 font-medium">{selectedOpportunity.match}% Match</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedOpportunity(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                    <p className="text-gray-700">{selectedOpportunity.description}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Calendar size={16} className="text-gray-500" />
+                        <span className="text-sm text-gray-600">Deadline:</span>
+                        <span className="font-medium">{selectedOpportunity.deadline}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <MapPin size={16} className="text-gray-500" />
+                        <span className="text-sm text-gray-600">Location:</span>
+                        <span className="font-medium">{selectedOpportunity.location}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Users size={16} className="text-gray-500" />
+                        <span className="text-sm text-gray-600">Participants:</span>
+                        <span className="font-medium">{selectedOpportunity.participants}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Award size={16} className="text-gray-500" />
+                        <span className="text-sm text-gray-600">Prizes:</span>
+                        <span className="font-medium">{selectedOpportunity.prizes}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Requirements</h3>
+                    <ul className="space-y-1">
+                      {selectedOpportunity.requirements.map((req: string, index: number) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          <CheckCircle size={16} className="text-green-500" />
+                          <span className="text-gray-700">{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                    {(() => {
+                      const deadlineDate = new Date(selectedOpportunity.deadline);
+                      const currentDate = new Date();
+                      const isExpired = deadlineDate < currentDate;
+                      
+                      return (
+                        <>
+                          <button 
+                            onClick={() => {
+                              setSelectedOpportunity(null);
+                              handleApplyNow(selectedOpportunity);
+                            }}
+                            className={`flex-1 px-4 py-2 rounded-lg transition-all text-sm ${
+                              isExpired 
+                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
+                            }`}
+                            disabled={isExpired}
+                          >
+                            {isExpired ? 'Application Closed' : 'Apply Now'}
+                          </button>
+                          {selectedOpportunity.url && (
+                            <button 
+                              onClick={() => {
+                                setSelectedOpportunity(null);
+                                window.open(selectedOpportunity.url, '_blank');
+                              }}
+                              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center"
+                            >
+                              <ExternalLink size={14} className="mr-1" />
+                              Visit Website
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
