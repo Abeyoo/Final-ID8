@@ -348,9 +348,10 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
         </div>
       )}
 
-      {/* Kanban Board */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {kanbanColumns.map(column => (
+      {/* Kanban Board - Only show for demo users or users with projects */}
+      {(userProfile?.email === 'john.doe@lincolnhs.org' || (projects && projects.length > 0)) && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {kanbanColumns.map(column => (
           <div key={column.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className={`${column.color} px-4 py-3 rounded-t-xl border-b border-gray-200`}>
               <div className="flex items-center justify-between">
@@ -420,10 +421,12 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
-      {/* Team Chat Section */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      {/* Team Chat Section - Only show for demo users or users with projects */}
+      {(userProfile?.email === 'john.doe@lincolnhs.org' || (projects && projects.length > 0)) && (
+        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Team Discussion</h3>
         
         <div className="space-y-4 mb-4 max-h-64 overflow-y-auto">
@@ -467,7 +470,22 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
             Send
           </button>
         </div>
-      </div>
+        </div>
+      )}
+
+      {/* Empty state for new users */}
+      {userProfile?.email !== 'john.doe@lincolnhs.org' && (!projects || projects.length === 0) && (
+        <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Plus size={32} className="text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Projects Yet</h3>
+          <p className="text-gray-500 mb-4">Join a team to start collaborating on projects!</p>
+          <button className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all">
+            Find Teams
+          </button>
+        </div>
+      )}
     </div>
   );
 };
