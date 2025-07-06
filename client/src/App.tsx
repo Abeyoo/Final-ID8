@@ -13,6 +13,7 @@ import TeamFinder from './components/TeamFinder';
 import ProjectBoard from './components/ProjectBoard';
 import AIChat from './components/AIChat';
 import Portfolio from './components/Portfolio';
+import Onboarding from './components/Onboarding';
 
 type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'schedule' | 'community' | 'team-finder' | 'project-board' | 'ai-chat' | 'portfolio';
 
@@ -128,6 +129,14 @@ function Home({ userProfile, activeSection, setActiveSection }: {
 function App() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if new user needs onboarding (no completed assessments and no personality type)
+  React.useEffect(() => {
+    if (user && user.completedAssessments === 0 && !user.personalityType) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -144,6 +153,21 @@ function App() {
 
   if (!isAuthenticated) {
     return <Landing />;
+  }
+
+  // Show onboarding for new users
+  if (showOnboarding) {
+    return (
+      <Onboarding 
+        onComplete={(profile) => {
+          setShowOnboarding(false);
+          // User profile will be updated through the API
+        }}
+        onBackToSignIn={() => {
+          window.location.href = '/api/logout';
+        }}
+      />
+    );
   }
 
   return <Home userProfile={user} activeSection={activeSection} setActiveSection={setActiveSection} />;
