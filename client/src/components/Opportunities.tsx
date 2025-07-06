@@ -672,12 +672,35 @@ const Opportunities: React.FC = () => {
         {/* Show More Button */}
         {filteredOpportunities.length > 6 && (
           <div className="mt-8 text-center">
-            <button
-              onClick={() => setShowAllOpportunities(!showAllOpportunities)}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
-            >
-              {showAllOpportunities ? 'Show Less' : `Show ${filteredOpportunities.length - 6} More Opportunities`}
-            </button>
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
+              <div className="mb-4">
+                <p className="text-gray-700 text-sm">
+                  {showAllOpportunities 
+                    ? `Showing all ${filteredOpportunities.length} opportunities` 
+                    : `Showing 6 of ${filteredOpportunities.length} opportunities`}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAllOpportunities(!showAllOpportunities)}
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium inline-flex items-center space-x-2"
+              >
+                {showAllOpportunities ? (
+                  <>
+                    <span>Show Less</span>
+                    <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    <span>Show {filteredOpportunities.length - 6} More Opportunities</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>
