@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, MoreHorizontal, Calendar, Users, MessageSquare, Paperclip, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
-const ProjectBoard: React.FC = () => {
+interface ProjectBoardProps {
+  userProfile?: any;
+}
+
+const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
   const [selectedProject, setSelectedProject] = useState('science-fair');
 
   // Check for selected project from Team Collaboration navigation
@@ -13,7 +18,15 @@ const ProjectBoard: React.FC = () => {
       localStorage.removeItem('selectedProjectId');
     }
   }, []);
-  const [projects, setProjects] = useState([
+
+  // Fetch user projects from the database
+  const { data: userProjects, isLoading: isProjectsLoading } = useQuery({
+    queryKey: [`/api/users/${userProfile?.id}/projects`],
+    enabled: !!userProfile?.id,
+  });
+
+  // Demo data for John Doe only
+  const demoProjects = [
     {
       id: 'science-fair',
       name: 'Solar Panel Efficiency Study',
@@ -48,7 +61,10 @@ const ProjectBoard: React.FC = () => {
       ],
       priority: 'medium'
     }
-  ]);
+  ];
+
+  // Use demo data for John Doe, real data for other users
+  const projects = userProfile?.email === 'john.doe@lincolnhs.org' ? demoProjects : (userProjects || []);
 
   const kanbanColumns = [
     {

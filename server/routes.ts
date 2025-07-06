@@ -557,6 +557,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user teams
+  app.get("/api/users/:userId/teams", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      const userTeams = await db
+        .select()
+        .from(teamInteractions)
+        .where(eq(teamInteractions.userId, userId))
+        .orderBy(teamInteractions.timestamp);
+
+      // Group interactions by team and create team objects
+      const teamsMap = new Map();
+      userTeams.forEach(interaction => {
+        const teamId = interaction.teamId;
+        if (!teamsMap.has(teamId)) {
+          teamsMap.set(teamId, {
+            id: teamId,
+            interactions: []
+          });
+        }
+        teamsMap.get(teamId).interactions.push(interaction);
+      });
+
+      // Transform to frontend format
+      const formattedTeams = Array.from(teamsMap.values()).map(team => {
+        const latestInteraction = team.interactions[team.interactions.length - 1];
+        return {
+          id: team.id,
+          name: `Team ${team.id}`,
+          description: 'User-created team',
+          members: team.interactions.length,
+          role: 'Member',
+          progress: 50,
+          deadline: '2024-12-31',
+          status: 'active',
+          category: 'Academic',
+          skills: ['Collaboration'],
+          project: null,
+          memberDetails: [],
+          joinRequests: []
+        };
+      });
+
+      res.json(formattedTeams);
+    } catch (error) {
+      console.error('Get user teams error:', error);
+      res.status(500).json({ error: 'Failed to get user teams' });
+    }
+  });
+
+  // Get user projects
+  app.get("/api/users/:userId/projects", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // For now, return empty array for new users
+      // Projects would typically be linked to teams
+      res.json([]);
+    } catch (error) {
+      console.error('Get user projects error:', error);
+      res.status(500).json({ error: 'Failed to get user projects' });
+    }
+  });
+
   // Get user's assessment completion status
   app.get("/api/assessments/:userId", async (req, res) => {
     try {

@@ -145,11 +145,11 @@ function App() {
       case 'development':
         return <DevelopmentPlans userProfile={userProfile} />;
       case 'team':
-        return <TeamCollaboration onNavigateToProject={(projectId) => setActiveSection('project-board')} />;
+        return <TeamCollaboration onNavigateToProject={(projectId) => setActiveSection('project-board')} userProfile={userProfile} />;
       case 'team-finder':
         return <TeamFinder />;
       case 'project-board':
-        return <ProjectBoard />;
+        return <ProjectBoard userProfile={userProfile} />;
       case 'opportunities':
         return <Opportunities />;
       case 'achievements':

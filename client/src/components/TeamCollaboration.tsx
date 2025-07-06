@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target, MoreHorizontal } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
 
 interface TeamCollaborationProps {
   onNavigateToProject: (projectId: string) => void;
+  userProfile?: any;
 }
 
-const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProject }) => {
+const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProject, userProfile }) => {
 
   const [showCreateTeamForm, setShowCreateTeamForm] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
@@ -27,7 +29,14 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
     isPrivate: false
   });
 
-  const [teams, setTeams] = useState([
+  // Fetch user teams from the database
+  const { data: userTeams, isLoading: isTeamsLoading } = useQuery({
+    queryKey: [`/api/users/${userProfile?.id}/teams`],
+    enabled: !!userProfile?.id,
+  });
+
+  // Demo data for John Doe only
+  const demoTeams = [
     {
       id: 1,
       name: 'Science Fair Team',
@@ -117,8 +126,10 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
         { id: 1, name: 'Daniel Wong', message: 'I placed 3rd in the regional math competition last year and would like to join the squad.', timestamp: '5 hours ago' }
       ]
     }
-  ]);
+  ];
 
+  // Use demo data for John Doe, real data for other users
+  const teams = userProfile?.email === 'john.doe@lincolnhs.org' ? demoTeams : (userTeams || []);
 
 
   const handleSkillChange = (index: number, value: string) => {
