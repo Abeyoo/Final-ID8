@@ -35,7 +35,7 @@ interface BehaviorData {
 
 export class PersonalityAnalysisService {
   
-  async analyzeUserPersonality(userId: number): Promise<{
+  async analyzeUserPersonality(userId: string): Promise<{
     updatedPersonality: string;
     personalityScores: PersonalityScores;
     confidence: number;
@@ -53,7 +53,7 @@ export class PersonalityAnalysisService {
     return analysis;
   }
 
-  private async gatherBehaviorData(userId: number): Promise<BehaviorData> {
+  private async gatherBehaviorData(userId: string): Promise<BehaviorData> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -316,7 +316,7 @@ export class PersonalityAnalysisService {
   }
 
   private async storeAnalysisResults(
-    userId: number, 
+    userId: string, 
     analysis: any, 
     previousPersonality: string | null
   ): Promise<void> {
@@ -352,7 +352,7 @@ export class PersonalityAnalysisService {
     await this.updatePersonalityPercentiles(userId, analysis.personalityScores, percentiles);
   }
 
-  private async calculatePersonalityPercentiles(userId: number, userScores: PersonalityScores): Promise<Record<string, number>> {
+  private async calculatePersonalityPercentiles(userId: string, userScores: PersonalityScores): Promise<Record<string, number>> {
     const percentiles: Record<string, number> = {};
     
     // Get all users' personality scores for comparison
@@ -398,7 +398,7 @@ export class PersonalityAnalysisService {
     return percentiles;
   }
 
-  private async updatePersonalityPercentiles(userId: number, scores: PersonalityScores, percentiles: Record<string, number>): Promise<void> {
+  private async updatePersonalityPercentiles(userId: string, scores: PersonalityScores, percentiles: Record<string, number>): Promise<void> {
     for (const [personalityType, score] of Object.entries(scores)) {
       // Get existing percentile record
       const [existing] = await db
@@ -449,7 +449,7 @@ export class PersonalityAnalysisService {
   }
 
   // Method to track behavioral data
-  async trackAssessmentResponse(userId: number, assessmentType: string, questionId: string, response: string): Promise<void> {
+  async trackAssessmentResponse(userId: string, assessmentType: string, questionId: string, response: string): Promise<void> {
     await db.insert(assessmentResponses).values({
       userId,
       assessmentType,
@@ -458,7 +458,7 @@ export class PersonalityAnalysisService {
     });
   }
 
-  async trackGoalCreation(userId: number, goalData: any): Promise<void> {
+  async trackGoalCreation(userId: string, goalData: any): Promise<void> {
     await db.insert(goals).values({
       userId,
       title: goalData.title,
@@ -467,7 +467,7 @@ export class PersonalityAnalysisService {
     });
   }
 
-  async trackGoalCompletion(userId: number, goalId: number): Promise<void> {
+  async trackGoalCompletion(userId: string, goalId: number): Promise<void> {
     await db.update(goals)
       .set({ 
         completed: true, 
@@ -477,7 +477,7 @@ export class PersonalityAnalysisService {
       .where(and(eq(goals.id, goalId), eq(goals.userId, userId)));
   }
 
-  async trackAchievement(userId: number, achievementType: string, title: string, description: string): Promise<void> {
+  async trackAchievement(userId: string, achievementType: string, title: string, description: string): Promise<void> {
     await db.insert(achievements).values({
       userId,
       achievementType,
@@ -486,7 +486,7 @@ export class PersonalityAnalysisService {
     });
   }
 
-  async trackTeamInteraction(userId: number, teamId: number, actionType: string, actionData: any): Promise<void> {
+  async trackTeamInteraction(userId: string, teamId: number, actionType: string, actionData: any): Promise<void> {
     await db.insert(teamInteractions).values({
       userId,
       teamId,
@@ -496,7 +496,7 @@ export class PersonalityAnalysisService {
   }
 
   async trackOpportunityInteraction(
-    userId: number, 
+    userId: string, 
     opportunityType: string, 
     category: string, 
     title: string, 
@@ -515,7 +515,7 @@ export class PersonalityAnalysisService {
   }
 
   // Get user's percentile rankings
-  async getUserPercentiles(userId: number): Promise<Record<string, any>> {
+  async getUserPercentiles(userId: string): Promise<Record<string, any>> {
     const percentiles = await db
       .select()
       .from(personalityPercentiles)

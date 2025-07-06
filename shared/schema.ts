@@ -1,13 +1,25 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real, varchar, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  name: text("name"),
-  email: text("email"),
+  id: varchar("id").primaryKey().notNull(), // Replit user ID (string)
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   personalityType: text("personality_type"),
   personalityScores: jsonb("personality_scores"), // Store scores for all 6 personality types
   createdAt: timestamp("created_at").defaultNow(),
@@ -16,7 +28,7 @@ export const users = pgTable("users", {
 
 export const assessmentResponses = pgTable("assessment_responses", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   assessmentType: text("assessment_type").notNull(), // 'personality', 'strengths', 'interests', etc.
   questionId: text("question_id").notNull(),
   response: text("response").notNull(),
@@ -25,7 +37,7 @@ export const assessmentResponses = pgTable("assessment_responses", {
 
 export const goals = pgTable("goals", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   title: text("title").notNull(),
   description: text("description"),
   category: text("category").notNull(),
@@ -37,7 +49,7 @@ export const goals = pgTable("goals", {
 
 export const achievements = pgTable("achievements", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   achievementType: text("achievement_type").notNull(),
   title: text("title").notNull(),
   description: text("description"),
@@ -46,7 +58,7 @@ export const achievements = pgTable("achievements", {
 
 export const teamInteractions = pgTable("team_interactions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   teamId: integer("team_id"),
   actionType: text("action_type").notNull(), // 'created_team', 'joined_team', 'updated_progress', 'completed_task'
   actionData: jsonb("action_data"),
@@ -55,7 +67,7 @@ export const teamInteractions = pgTable("team_interactions", {
 
 export const opportunities = pgTable("opportunities", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   opportunityType: text("opportunity_type").notNull(), // 'competition', 'internship', 'scholarship', 'program'
   category: text("category").notNull(), // 'STEM', 'Arts', 'Leadership', 'Sports', etc.
   title: text("title").notNull(),
@@ -67,7 +79,7 @@ export const opportunities = pgTable("opportunities", {
 
 export const personalityPercentiles = pgTable("personality_percentiles", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   personalityType: text("personality_type").notNull(),
   percentile: real("percentile").notNull(), // 0-100 percentile rank
   scoreHistory: jsonb("score_history"), // Historical scores for trending
@@ -76,7 +88,7 @@ export const personalityPercentiles = pgTable("personality_percentiles", {
 
 export const personalityAnalysis = pgTable("personality_analysis", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   analysisData: jsonb("analysis_data"), // Comprehensive personality analysis from AI
   confidence: real("confidence"), // AI confidence score (0-1)
   previousPersonality: text("previous_personality"),
@@ -88,12 +100,21 @@ export const personalityAnalysis = pgTable("personality_analysis", {
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  name: true,
+  id: true,
   email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
   personalityType: true,
   personalityScores: true,
+});
+
+export const upsertUserSchema = createInsertSchema(users).pick({
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
 });
 
 export const insertAssessmentResponseSchema = createInsertSchema(assessmentResponses).omit({
@@ -133,6 +154,7 @@ export const insertPersonalityAnalysisSchema = createInsertSchema(personalityAna
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
 export type Goal = typeof goals.$inferSelect;

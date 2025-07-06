@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { personalityAI } from "./personalityAI";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -236,76 +237,40 @@ async function generateOpportunityRecommendations(personalityData: any, userStat
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication Routes
-  app.post("/api/auth/signup", async (req, res) => {
-    try {
-      const { name, email, password, school, grade } = req.body;
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(email);
-      if (existingUser) {
-        return res.status(400).json({ error: 'User already exists' });
-      }
-      
-      // Create new user with initial empty state
-      const newUser = await storage.createUser({
-        username: email,
-        password, // In production, hash this password
-        name,
-        email,
-        personalityType: null,
-        personalityScores: null
-      });
-      
-      res.json({ 
-        success: true, 
-        user: { 
-          id: newUser.id, 
-          name: newUser.name, 
-          email: newUser.email,
-          completedAssessments: 0,
-          activeGoals: 0,
-          completedGoals: 0,
-          teamProjects: 0,
-          achievements: 0
-        } 
-      });
-    } catch (error) {
-      console.error('Signup error:', error);
-      res.status(500).json({ error: 'Failed to create user' });
-    }
-  });
+  // Auth middleware
+  await setupAuth(app);
 
-  app.post("/api/auth/signin", async (req, res) => {
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const { email, password } = req.body;
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       
-      const user = await storage.getUserByUsername(email);
-      if (!user || user.password !== password) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Get user stats
-      const stats = await getUserStats(user.id);
+      const stats = await getUserStats(userId);
       
-      res.json({ 
-        success: true, 
-        user: { 
-          id: user.id, 
-          name: user.name, 
-          email: user.email,
-          personalityType: user.personalityType,
-          ...stats
-        } 
+      res.json({
+        id: user.id,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        personalityType: user.personalityType,
+        ...stats
       });
     } catch (error) {
-      console.error('Signin error:', error);
-      res.status(500).json({ error: 'Failed to sign in' });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
   // Helper function to get user stats
-  async function getUserStats(userId: number) {
+  async function getUserStats(userId: string) {
     try {
       const [assessmentCount] = await db.select({ count: sql`count(*)` }).from(assessmentResponses).where(eq(assessmentResponses.userId, userId));
       const [activeGoalCount] = await db.select({ count: sql`count(*)` }).from(goals).where(and(eq(goals.userId, userId), or(eq(goals.completed, false), isNull(goals.completed))));
@@ -497,10 +462,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user goals
-  app.get("/api/users/:userId/goals", async (req, res) => {
+  // Get user goals (protected route)
+  app.get("/api/users/:userId/goals", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
+      
+      // Ensure user can only access their own data
+      if (userId !== req.user.claims.sub) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
       
       const userGoals = await db
         .select()
@@ -532,10 +502,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new goal
-  app.post("/api/users/:userId/goals", async (req, res) => {
+  // Create new goal (protected route)
+  app.post("/api/users/:userId/goals", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
+      
+      // Ensure user can only create goals for themselves
+      if (userId !== req.user.claims.sub) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      
       const { title, description, category } = req.body;
 
       const newGoal = await db
