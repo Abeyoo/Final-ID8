@@ -46,11 +46,23 @@ const Opportunities: React.FC = () => {
   const handleApplyNow = async (opportunity: any) => {
     await trackOpportunityInteraction(opportunity, 'applied');
     
+    // For AI recommendations, try to find matching opportunity with URL
+    let opportunityWithUrl = opportunity;
+    if (opportunity.aiGenerated) {
+      const matchingOpp = opportunities.find(opp => 
+        opp.title.toLowerCase().includes(opportunity.title.toLowerCase().split(' ').slice(0, 2).join(' ')) ||
+        opportunity.title.toLowerCase().includes(opp.title.toLowerCase().split(' ').slice(0, 2).join(' '))
+      );
+      if (matchingOpp) {
+        opportunityWithUrl = { ...opportunity, url: matchingOpp.url, applicationUrl: matchingOpp.applicationUrl };
+      }
+    }
+    
     // Open application URL if available
-    if (opportunity.applicationUrl) {
-      window.open(opportunity.applicationUrl, '_blank');
-    } else if (opportunity.url) {
-      window.open(opportunity.url, '_blank');
+    if (opportunityWithUrl.applicationUrl) {
+      window.open(opportunityWithUrl.applicationUrl, '_blank');
+    } else if (opportunityWithUrl.url) {
+      window.open(opportunityWithUrl.url, '_blank');
     } else {
       // Show alert for opportunities without URLs
       alert(`To apply for ${opportunity.title}, please contact your school counselor or search for "${opportunity.title}" online.`);
@@ -60,12 +72,24 @@ const Opportunities: React.FC = () => {
   const handleLearnMore = async (opportunity: any) => {
     await trackOpportunityInteraction(opportunity, 'viewed');
     
+    // For AI recommendations, try to find matching opportunity with URL
+    let opportunityWithUrl = opportunity;
+    if (opportunity.aiGenerated) {
+      const matchingOpp = opportunities.find(opp => 
+        opp.title.toLowerCase().includes(opportunity.title.toLowerCase().split(' ').slice(0, 2).join(' ')) ||
+        opportunity.title.toLowerCase().includes(opp.title.toLowerCase().split(' ').slice(0, 2).join(' '))
+      );
+      if (matchingOpp) {
+        opportunityWithUrl = { ...opportunity, url: matchingOpp.url, applicationUrl: matchingOpp.applicationUrl };
+      }
+    }
+    
     // Open info URL if available
-    if (opportunity.url) {
-      window.open(opportunity.url, '_blank');
+    if (opportunityWithUrl.url) {
+      window.open(opportunityWithUrl.url, '_blank');
     } else {
       // Show detailed modal for opportunities without URLs
-      setSelectedOpportunity(opportunity);
+      setSelectedOpportunity(opportunityWithUrl);
     }
   };
 
@@ -387,6 +411,182 @@ const Opportunities: React.FC = () => {
       requirements: ['Grades 4-8', 'School qualification', 'Geography knowledge'],
       match: 77,
       featured: false
+    },
+    {
+      id: 23,
+      title: 'MIT Research Science Institute (RSI)',
+      type: 'Summer Program',
+      category: 'Science',
+      description: 'Prestigious 6-week summer research program in science, technology, engineering, and mathematics.',
+      deadline: '2025-01-24',
+      location: 'MIT, Cambridge, MA',
+      participants: '80 students worldwide',
+      prizes: 'Full scholarship + research mentorship',
+      requirements: ['Rising high school seniors', 'Exceptional STEM aptitude', 'Research interest'],
+      match: 95,
+      featured: true,
+      url: 'https://www.cee.org/research-science-institute',
+      applicationUrl: 'https://www.cee.org/research-science-institute'
+    },
+    {
+      id: 24,
+      title: 'Harvard Summer School',
+      type: 'Summer Program',
+      category: 'Academic',
+      description: 'College-level courses at Harvard University for high school students.',
+      deadline: '2025-04-30',
+      location: 'Harvard University, Cambridge, MA',
+      participants: '3,000+ students',
+      prizes: 'College credit + Harvard experience',
+      requirements: ['High school students', 'Strong academic record', 'Application essay'],
+      match: 85,
+      featured: false,
+      url: 'https://www.summer.harvard.edu/',
+      applicationUrl: 'https://www.summer.harvard.edu/high-school-programs'
+    },
+    {
+      id: 25,
+      title: 'Stanford Summer Humanities Institute',
+      type: 'Summer Program',
+      category: 'Academic',
+      description: 'Intensive 8-week program exploring humanities through seminars, research, and creative projects.',
+      deadline: '2025-02-15',
+      location: 'Stanford University, CA',
+      participants: '30 students',
+      prizes: 'Full scholarship + mentorship',
+      requirements: ['Rising seniors', 'Interest in humanities', 'Academic excellence'],
+      match: 82,
+      featured: true,
+      url: 'https://shsi.stanford.edu/',
+      applicationUrl: 'https://shsi.stanford.edu/apply'
+    },
+    {
+      id: 26,
+      title: 'NASA USRP Internship Program',
+      type: 'Summer Program',
+      category: 'Science',
+      description: 'Undergraduate Student Research Program offering hands-on NASA research experience.',
+      deadline: '2025-03-01',
+      location: 'NASA Centers nationwide',
+      participants: '1,000+ interns',
+      prizes: 'Paid internship + mentorship',
+      requirements: ['College freshmen+', 'STEM major', 'US citizenship'],
+      match: 93,
+      featured: true,
+      url: 'https://www.nasa.gov/learning/students/internships/',
+      applicationUrl: 'https://intern.nasa.gov/'
+    },
+    {
+      id: 27,
+      title: 'Google Computer Science Summer Institute',
+      type: 'Summer Program',
+      category: 'Technology',
+      description: 'Intensive computer science program for underrepresented students in tech.',
+      deadline: '2025-04-15',
+      location: 'Google offices nationwide',
+      participants: '200+ students',
+      prizes: 'Full scholarship + Google mentorship',
+      requirements: ['Rising college seniors', 'CS major', 'Underrepresented background'],
+      match: 88,
+      featured: false,
+      url: 'https://buildyourfuture.withgoogle.com/programs/computer-science-summer-institute',
+      applicationUrl: 'https://buildyourfuture.withgoogle.com/programs/computer-science-summer-institute'
+    },
+    {
+      id: 28,
+      title: 'Yale Young Global Scholars',
+      type: 'Summer Program',
+      category: 'Leadership',
+      description: 'Academic enrichment program for outstanding high school students worldwide.',
+      deadline: '2025-01-10',
+      location: 'Yale University, New Haven, CT',
+      participants: '1,800+ students',
+      prizes: 'Certificate + Yale experience',
+      requirements: ['Rising juniors/seniors', 'Academic excellence', 'Global perspective'],
+      match: 79,
+      featured: false,
+      url: 'https://globalscholars.yale.edu/',
+      applicationUrl: 'https://globalscholars.yale.edu/apply'
+    },
+    {
+      id: 29,
+      title: 'Telluride Summer Programs',
+      type: 'Summer Program',
+      category: 'Academic',
+      description: 'Free liberal arts seminars covering topics in humanities, social sciences, and critical thinking.',
+      deadline: '2025-01-31',
+      location: 'Multiple universities',
+      participants: '200+ students',
+      prizes: 'Full scholarship + intellectual community',
+      requirements: ['Rising seniors', 'Critical thinking skills', 'Diverse perspectives'],
+      match: 86,
+      featured: true,
+      url: 'https://www.tellurideassociation.org/programs/high-school-students/',
+      applicationUrl: 'https://www.tellurideassociation.org/programs/high-school-students/'
+    },
+    {
+      id: 30,
+      title: 'Johns Hopkins CTY Summer Programs',
+      type: 'Summer Program',
+      category: 'Academic',
+      description: 'Center for Talented Youth offering intensive academic courses for gifted students.',
+      deadline: '2025-05-01',
+      location: 'Multiple university campuses',
+      participants: '10,000+ students',
+      prizes: 'College credit + academic acceleration',
+      requirements: ['High ability students', 'Qualifying test scores', 'Academic readiness'],
+      match: 84,
+      featured: false,
+      url: 'https://cty.jhu.edu/programs/',
+      applicationUrl: 'https://cty.jhu.edu/programs/'
+    },
+    {
+      id: 31,
+      title: 'Bank of America Student Leaders',
+      type: 'Summer Program',
+      category: 'Leadership',
+      description: 'Paid summer internship program focused on leadership development and community service.',
+      deadline: '2025-02-28',
+      location: 'Major cities nationwide',
+      participants: '300+ students',
+      prizes: '$5,000 + leadership summit',
+      requirements: ['Rising seniors', 'Community service', 'Leadership potential'],
+      match: 76,
+      featured: false,
+      url: 'https://about.bankofamerica.com/en/making-an-impact/student-leaders',
+      applicationUrl: 'https://about.bankofamerica.com/en/making-an-impact/student-leaders'
+    },
+    {
+      id: 32,
+      title: 'Carnegie Mellon SAMS Program',
+      type: 'Summer Program',
+      category: 'Technology',
+      description: 'Summer Academy for Math and Science for underrepresented minorities in STEM.',
+      deadline: '2025-04-01',
+      location: 'Carnegie Mellon University, Pittsburgh, PA',
+      participants: '120 students',
+      prizes: 'Full scholarship + college prep',
+      requirements: ['Rising seniors', 'Underrepresented minorities', 'STEM interest'],
+      match: 91,
+      featured: true,
+      url: 'https://www.cmu.edu/pre-college/academic-programs/sams.html',
+      applicationUrl: 'https://www.cmu.edu/pre-college/academic-programs/sams.html'
+    },
+    {
+      id: 33,
+      title: 'Minority Introduction to Engineering and Science (MITES)',
+      type: 'Summer Program',
+      category: 'Science',
+      description: 'MIT rigorous six-week residential STEM program for underrepresented high school students.',
+      deadline: '2025-02-01',
+      location: 'MIT, Cambridge, MA',
+      participants: '80 students',
+      prizes: 'Full scholarship + MIT experience',
+      requirements: ['Rising seniors', 'Underrepresented minorities', 'STEM excellence'],
+      match: 94,
+      featured: true,
+      url: 'https://oeop.mit.edu/programs/mites',
+      applicationUrl: 'https://oeop.mit.edu/programs/mites'
     }
   ];
 
@@ -519,12 +719,34 @@ const Opportunities: React.FC = () => {
                     </div>
                   </div>
                   
-                  <button 
-                    onClick={() => trackOpportunityInteraction(opportunity, 'applied')}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium"
-                  >
-                    Apply Now
-                  </button>
+                  <div className="flex flex-col space-y-2">
+                    {(() => {
+                      const deadlineDate = new Date(opportunity.deadline);
+                      const currentDate = new Date();
+                      const isExpired = deadlineDate < currentDate;
+                      
+                      return (
+                        <button 
+                          onClick={() => isExpired ? handleLearnMore(opportunity) : handleApplyNow(opportunity)}
+                          className={`w-full px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                            isExpired 
+                              ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                              : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
+                          }`}
+                          disabled={isExpired}
+                        >
+                          {isExpired ? 'Application Closed' : 'Apply Now'}
+                        </button>
+                      );
+                    })()}
+                    <button 
+                      onClick={() => handleLearnMore(opportunity)}
+                      className="w-full px-3 py-1.5 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors text-xs flex items-center justify-center"
+                    >
+                      <ExternalLink size={12} className="mr-1" />
+                      Learn More
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
