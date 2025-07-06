@@ -497,6 +497,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user goals
+  app.get("/api/users/:userId/goals", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      const userGoals = await db
+        .select()
+        .from(goals)
+        .where(eq(goals.userId, userId))
+        .orderBy(goals.createdAt);
+
+      // Transform database goals to frontend format
+      const formattedGoals = userGoals.map(goal => ({
+        id: goal.id,
+        title: goal.title,
+        description: goal.description,
+        category: goal.category,
+        progress: goal.progress,
+        status: goal.completed ? 'completed' : 'active',
+        deadline: goal.completedAt ? goal.completedAt.toISOString().split('T')[0] : '2024-12-31',
+        milestones: [
+          { title: `Complete ${goal.title} - Step 1`, completed: goal.progress >= 25 },
+          { title: `Complete ${goal.title} - Step 2`, completed: goal.progress >= 50 },
+          { title: `Complete ${goal.title} - Step 3`, completed: goal.progress >= 75 },
+          { title: `Complete ${goal.title} - Final`, completed: goal.progress >= 100 },
+        ]
+      }));
+
+      res.json(formattedGoals);
+    } catch (error) {
+      console.error('Get user goals error:', error);
+      res.status(500).json({ error: 'Failed to get user goals' });
+    }
+  });
+
+  // Create new goal
+  app.post("/api/users/:userId/goals", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { title, description, category } = req.body;
+
+      const newGoal = await db
+        .insert(goals)
+        .values({
+          userId,
+          title,
+          description,
+          category,
+          progress: 0,
+          completed: false
+        })
+        .returning();
+
+      res.json({ success: true, goal: newGoal[0] });
+    } catch (error) {
+      console.error('Create goal error:', error);
+      res.status(500).json({ error: 'Failed to create goal' });
+    }
+  });
+
   // Get user's assessment completion status
   app.get("/api/assessments/:userId", async (req, res) => {
     try {

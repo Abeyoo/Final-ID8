@@ -143,7 +143,7 @@ function App() {
       case 'assessment':
         return <SelfAssessment userProfile={userProfile} />;
       case 'development':
-        return <DevelopmentPlans />;
+        return <DevelopmentPlans userProfile={userProfile} />;
       case 'team':
         return <TeamCollaboration onNavigateToProject={(projectId) => setActiveSection('project-board')} />;
       case 'team-finder':

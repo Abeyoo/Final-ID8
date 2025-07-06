@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Target, Plus, CheckCircle, Clock, TrendingUp, BookOpen, X } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
 
-const DevelopmentPlans: React.FC = () => {
+interface DevelopmentPlansProps {
+  userProfile?: any;
+}
+
+const DevelopmentPlans: React.FC<DevelopmentPlansProps> = ({ userProfile }) => {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showCompletedGoals, setShowCompletedGoals] = useState(false);
@@ -15,7 +20,14 @@ const DevelopmentPlans: React.FC = () => {
     milestones: ['', '', '', '']
   });
 
-  const [goals, setGoals] = useState([
+  // Fetch user goals from the database
+  const { data: userGoals, isLoading: isGoalsLoading } = useQuery({
+    queryKey: [`/api/users/${userProfile?.id}/goals`],
+    enabled: !!userProfile?.id,
+  });
+
+  // Demo data for John Doe only
+  const demoGoals = [
     {
       id: 1,
       title: 'Improve Public Speaking',
@@ -61,7 +73,10 @@ const DevelopmentPlans: React.FC = () => {
         { title: 'Create data visualization project', completed: false },
       ]
     }
-  ]);
+  ];
+
+  // Use demo data for John Doe, real data for other users
+  const goals = userProfile?.email === 'john.doe@lincolnhs.org' ? demoGoals : (userGoals || []);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -171,15 +186,12 @@ const DevelopmentPlans: React.FC = () => {
       milestones: milestones
     };
 
-    setGoals(prev => [...prev, newGoal]);
-    
-    // Track goal creation with AI personality analysis
+    // Create goal in database
     try {
-      const response = await fetch('/api/goals', {
+      const response = await fetch(`/api/users/${userProfile?.id}/goals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: 1, // TODO: Get from user context
           title: newGoalForm.title,
           description: newGoalForm.description,
           category: newGoalForm.category
@@ -188,12 +200,13 @@ const DevelopmentPlans: React.FC = () => {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Personality updated after goal creation:', result.personalityUpdate);
-        // Invalidate the dashboard stats cache to show updated active goals count
-        queryClient.invalidateQueries({ queryKey: ['/api/users/1/stats'] });
+        console.log('Goal created successfully:', result.goal);
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: [`/api/users/${userProfile?.id}/goals`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/users/${userProfile?.id}/stats`] });
       }
     } catch (error) {
-      console.error('Failed to track goal creation:', error);
+      console.error('Failed to create goal:', error);
     }
 
     setNewGoalForm({
