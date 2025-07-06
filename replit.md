@@ -90,7 +90,11 @@ A comprehensive student development platform that helps students with career ass
 - Prefers sign-in page as the landing experience instead of onboarding
 - Values clear, professional communication  
 - Focuses on student-centered design and functionality
-- **2025-07-06**: Implemented Replit Auth - replaced custom sign-up with OAuth authentication, but user inquired about missing sign-up page
+- **2025-07-06**: Implemented Replit Auth with improved authentication flow
+  - Created AuthChoice component with "Sign In" and "Create Account" options after clicking "Get Started"
+  - Sign In: Authenticates existing users directly to dashboard
+  - Create Account: Authenticates new users and routes them through onboarding flow
+  - Maintained professional OAuth security while preserving familiar sign-up experience
 
 ## Development Notes
 - Uses mock authentication with predefined user accounts for testing

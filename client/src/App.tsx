@@ -14,11 +14,12 @@ import ProjectBoard from './components/ProjectBoard';
 import AIChat from './components/AIChat';
 import Portfolio from './components/Portfolio';
 import Onboarding from './components/Onboarding';
+import AuthChoice from './components/AuthChoice';
 
 type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'schedule' | 'community' | 'team-finder' | 'project-board' | 'ai-chat' | 'portfolio';
 
 // Landing page component for logged-out users
-function Landing() {
+function Landing({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-16">
@@ -31,12 +32,12 @@ function Landing() {
             set meaningful goals, collaborate with teams, and discover amazing opportunities.
           </p>
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-            <a 
-              href="/api/login"
+            <button 
+              onClick={onGetStarted}
               className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
             >
               Get Started
-            </a>
+            </button>
           </div>
           
           <div className="mt-16 grid md:grid-cols-3 gap-8">
@@ -130,13 +131,35 @@ function App() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentView, setCurrentView] = useState<'landing' | 'auth-choice'>('landing');
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // Check if new user needs onboarding (no completed assessments and no personality type)
   React.useEffect(() => {
     if (user && user.completedAssessments === 0 && !user.personalityType) {
-      setShowOnboarding(true);
+      if (isNewUser) {
+        setShowOnboarding(true);
+      }
     }
-  }, [user]);
+  }, [user, isNewUser]);
+
+  const handleGetStarted = () => {
+    setCurrentView('auth-choice');
+  };
+
+  const handleSignIn = () => {
+    setIsNewUser(false);
+    window.location.href = '/api/login';
+  };
+
+  const handleCreateAccount = () => {
+    setIsNewUser(true);
+    window.location.href = '/api/login';
+  };
+
+  const handleBackToLanding = () => {
+    setCurrentView('landing');
+  };
 
   if (isLoading) {
     return (
@@ -152,7 +175,16 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <Landing />;
+    if (currentView === 'auth-choice') {
+      return (
+        <AuthChoice
+          onSignIn={handleSignIn}
+          onCreateAccount={handleCreateAccount}
+          onBack={handleBackToLanding}
+        />
+      );
+    }
+    return <Landing onGetStarted={handleGetStarted} />;
   }
 
   // Show onboarding for new users
@@ -161,6 +193,7 @@ function App() {
       <Onboarding 
         onComplete={(profile) => {
           setShowOnboarding(false);
+          setIsNewUser(false);
           // User profile will be updated through the API
         }}
         onBackToSignIn={() => {
