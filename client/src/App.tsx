@@ -170,6 +170,10 @@ function App() {
     setCurrentView('auth-choice');
   };
 
+  const handleSignOut = () => {
+    window.location.href = '/api/logout';
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
