@@ -60,12 +60,17 @@ const Opportunities: React.FC = () => {
     
     // Open application URL if available
     if (opportunityWithUrl.applicationUrl) {
-      window.open(opportunityWithUrl.applicationUrl, '_blank');
+      console.log(`Opening application page for ${opportunity.title}: ${opportunityWithUrl.applicationUrl}`);
+      window.open(opportunityWithUrl.applicationUrl, '_blank', 'noopener,noreferrer');
     } else if (opportunityWithUrl.url) {
-      window.open(opportunityWithUrl.url, '_blank');
+      console.log(`Opening info page for ${opportunity.title}: ${opportunityWithUrl.url}`);
+      window.open(opportunityWithUrl.url, '_blank', 'noopener,noreferrer');
     } else {
-      // Show alert for opportunities without URLs
-      alert(`To apply for ${opportunity.title}, please contact your school counselor or search for "${opportunity.title}" online.`);
+      // For opportunities without URLs, provide more helpful guidance
+      const searchQuery = encodeURIComponent(`${opportunity.title} application`);
+      const searchUrl = `https://www.google.com/search?q=${searchQuery}`;
+      console.log(`No direct URL available, opening Google search for ${opportunity.title}`);
+      window.open(searchUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -138,7 +143,9 @@ const Opportunities: React.FC = () => {
       prizes: 'Recognition + scholarships',
       requirements: ['3.0+ GPA', 'Service hours', 'Leadership activities'],
       match: 88,
-      featured: false
+      featured: false,
+      url: 'https://www.nhs.us/',
+      applicationUrl: 'https://www.nhs.us/students/how-to-join/'
     },
     {
       id: 4,
@@ -214,7 +221,9 @@ const Opportunities: React.FC = () => {
       prizes: '$10,000 scholarships',
       requirements: ['Grades 7-12', 'Original creative work', 'Regional submission'],
       match: 83,
-      featured: false
+      featured: false,
+      url: 'https://www.artandwriting.org/',
+      applicationUrl: 'https://www.artandwriting.org/submit/'
     },
     {
       id: 9,
