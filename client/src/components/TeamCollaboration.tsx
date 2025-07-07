@@ -35,15 +35,6 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
     enabled: !!userProfile?.id,
   });
 
-  // Debug logging
-  console.log('Team Collaboration Debug:', {
-    userProfile: userProfile?.id,
-    userTeams,
-    isTeamsLoading,
-    teamsError,
-    formattedTeams: formatTeamsForDisplay(userTeams || [])
-  });
-
   // Demo data for John Doe only
   const demoTeams = [
     {
@@ -160,6 +151,15 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
 
   // Always use real database data for all users
   const teams = formatTeamsForDisplay(userTeams || []);
+  
+  // Debug logging
+  console.log('Team Collaboration Debug:', {
+    userProfile: userProfile?.id,
+    userTeams,
+    isTeamsLoading,
+    teamsError,
+    formattedTeams: teams
+  });
 
 
   const handleSkillChange = (index: number, value: string) => {

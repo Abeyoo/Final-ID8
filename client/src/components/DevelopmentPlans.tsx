@@ -75,8 +75,8 @@ const DevelopmentPlans: React.FC<DevelopmentPlansProps> = ({ userProfile }) => {
     }
   ];
 
-  // Use demo data for John Doe, real data for other users
-  const goals = userProfile?.email === 'john.doe@lincolnhs.org' ? demoGoals : (userGoals || []);
+  // Always use real database data for all users
+  const goals = userGoals || [];
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

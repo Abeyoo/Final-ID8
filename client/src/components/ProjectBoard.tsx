@@ -63,8 +63,8 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
     }
   ];
 
-  // Use demo data for John Doe, real data for other users
-  const projects = userProfile?.email === 'john.doe@lincolnhs.org' ? demoProjects : (userProjects || []);
+  // Always use real database data for all users
+  const projects = userProjects || [];
 
   const kanbanColumns = [
     {
@@ -348,8 +348,8 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
         </div>
       )}
 
-      {/* Kanban Board - Only show for demo users or users with projects */}
-      {(userProfile?.email === 'john.doe@lincolnhs.org' || (projects && projects.length > 0)) && (
+      {/* Kanban Board - Show for users with projects */}
+      {(projects && projects.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {kanbanColumns.map(column => (
           <div key={column.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -424,8 +424,8 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
         </div>
       )}
 
-      {/* Team Chat Section - Only show for demo users or users with projects */}
-      {(userProfile?.email === 'john.doe@lincolnhs.org' || (projects && projects.length > 0)) && (
+      {/* Team Chat Section - Show for users with projects */}
+      {(projects && projects.length > 0) && (
         <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Team Discussion</h3>
         
@@ -474,7 +474,7 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
       )}
 
       {/* Empty state for new users */}
-      {userProfile?.email !== 'john.doe@lincolnhs.org' && (!projects || projects.length === 0) && (
+      {(!projects || projects.length === 0) && (
         <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Plus size={32} className="text-white" />
