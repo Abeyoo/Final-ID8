@@ -269,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           response: response as string
         }));
         
-        await db.insert(assessmentResponses).values(responses);
+        await db.insert(schema.assessmentResponses).values(responses);
       }
       
       // Create session for the user
