@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, MoreHorizontal, Calendar, Users, MessageSquare, Paperclip, CheckCircle, Clock, AlertCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Plus, MoreHorizontal, Calendar, Users, MessageSquare, Paperclip, CheckCircle, Clock, AlertCircle, X } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 
 interface ProjectBoardProps {
   userProfile?: any;
@@ -8,6 +9,14 @@ interface ProjectBoardProps {
 
 const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
   const [selectedProject, setSelectedProject] = useState('science-fair');
+  const [showCreateProjectForm, setShowCreateProjectForm] = useState(false);
+  const [newProjectForm, setNewProjectForm] = useState({
+    name: '',
+    description: '',
+    teamId: '',
+    priority: 'medium',
+    deadline: ''
+  });
 
   // Check for selected project from Team Collaboration navigation
   useEffect(() => {
@@ -24,6 +33,61 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
     queryKey: [`/api/users/${userProfile?.id}/projects`],
     enabled: !!userProfile?.id,
   });
+
+  // Fetch user teams for project creation
+  const { data: userTeams } = useQuery({
+    queryKey: [`/api/users/${userProfile?.id}/teams`],
+    enabled: !!userProfile?.id,
+  });
+
+  // Create project mutation
+  const createProjectMutation = useMutation({
+    mutationFn: async (projectData: any) => {
+      return await apiRequest('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...projectData,
+          userId: userProfile?.id
+        })
+      });
+    },
+    onSuccess: () => {
+      // Invalidate projects query to refresh the list
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userProfile?.id}/projects`] });
+      
+      // Reset form and close modal
+      setNewProjectForm({
+        name: '',
+        description: '',
+        teamId: '',
+        priority: 'medium',
+        deadline: ''
+      });
+      setShowCreateProjectForm(false);
+    },
+    onError: (error) => {
+      console.error('Failed to create project:', error);
+    }
+  });
+
+  const handleCreateProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newProjectForm.name.trim()) {
+      return; // Basic validation
+    }
+
+    const projectData = {
+      name: newProjectForm.name,
+      description: newProjectForm.description,
+      teamId: newProjectForm.teamId ? parseInt(newProjectForm.teamId) : null,
+      priority: newProjectForm.priority,
+      deadline: newProjectForm.deadline || null
+    };
+
+    createProjectMutation.mutate(projectData);
+  };
 
   // Demo data for John Doe only
   const demoProjects = [
@@ -197,7 +261,10 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Project Board</h1>
           <p className="text-gray-600">Manage tasks and track progress with your team.</p>
         </div>
-        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all">
+        <button 
+          onClick={() => setShowCreateProjectForm(true)}
+          className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+        >
           <Plus size={20} className="mr-2" />
           New Project
         </button>
@@ -484,6 +551,122 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ userProfile }) => {
           <button className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all">
             Find Teams
           </button>
+        </div>
+      )}
+
+      {/* Create Project Modal */}
+      {showCreateProjectForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
+                <button
+                  onClick={() => setShowCreateProjectForm(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateProject} className="space-y-6">
+                {/* Project Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Project Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newProjectForm.name}
+                    onChange={(e) => setNewProjectForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter project name..."
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={newProjectForm.description}
+                    onChange={(e) => setNewProjectForm(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24 resize-none"
+                    placeholder="Describe your project..."
+                  />
+                </div>
+
+                {/* Team Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Associated Team
+                  </label>
+                  <select
+                    value={newProjectForm.teamId}
+                    onChange={(e) => setNewProjectForm(prev => ({ ...prev, teamId: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="">Personal Project</option>
+                    {userTeams?.map((team: any) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Priority */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Priority
+                  </label>
+                  <select
+                    value={newProjectForm.priority}
+                    onChange={(e) => setNewProjectForm(prev => ({ ...prev, priority: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+
+                {/* Deadline */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={newProjectForm.deadline}
+                    onChange={(e) => setNewProjectForm(prev => ({ ...prev, deadline: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateProjectForm(false)}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createProjectMutation.isPending}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+                  >
+                    {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
     </div>

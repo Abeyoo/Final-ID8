@@ -89,6 +89,34 @@ export const teamInteractions = pgTable("team_interactions", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  teamId: integer("team_id").references(() => teams.id),
+  creatorId: varchar("creator_id").references(() => users.id),
+  status: text("status").default("active"), // 'active', 'completed', 'paused'
+  priority: text("priority").default("medium"), // 'high', 'medium', 'low'
+  progress: integer("progress").default(0),
+  deadline: timestamp("deadline"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const projectTasks = pgTable("project_tasks", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  assigneeId: varchar("assignee_id").references(() => users.id),
+  status: text("status").default("todo"), // 'todo', 'in_progress', 'review', 'done'
+  priority: text("priority").default("medium"),
+  completed: boolean("completed").default(false),
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const opportunities = pgTable("opportunities", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").references(() => users.id),
@@ -173,6 +201,18 @@ export const insertTeamInteractionSchema = createInsertSchema(teamInteractions).
   timestamp: true,
 });
 
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProjectTaskSchema = createInsertSchema(projectTasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
   id: true,
   timestamp: true,
@@ -197,6 +237,8 @@ export type Achievement = typeof achievements.$inferSelect;
 export type Team = typeof teams.$inferSelect;
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type TeamInteraction = typeof teamInteractions.$inferSelect;
+export type Project = typeof projects.$inferSelect;
+export type ProjectTask = typeof projectTasks.$inferSelect;
 export type Opportunity = typeof opportunities.$inferSelect;
 export type PersonalityPercentile = typeof personalityPercentiles.$inferSelect;
 export type PersonalityAnalysis = typeof personalityAnalysis.$inferSelect;

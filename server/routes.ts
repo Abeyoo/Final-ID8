@@ -7,7 +7,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { db } from "./db";
-import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions, teams, teamMembers, users } from "@shared/schema";
+import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions, teams, teamMembers, projects, projectTasks, users } from "@shared/schema";
 import { eq, sql, and, or, isNull } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
@@ -554,6 +554,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get user teams error:', error);
       res.status(500).json({ error: 'Failed to get user teams' });
+    }
+  });
+
+  // Create a new project
+  app.post("/api/projects", async (req, res) => {
+    try {
+      const { name, description, teamId, priority, deadline, userId } = req.body;
+      
+      // Validate required fields
+      if (!name || !userId) {
+        return res.status(400).json({ error: 'Name and userId are required' });
+      }
+
+      // Create the project
+      const [newProject] = await db.insert(projects).values({
+        name,
+        description: description || '',
+        teamId: teamId || null,
+        creatorId: userId,
+        priority: priority || 'medium',
+        deadline: deadline ? new Date(deadline) : null,
+      }).returning();
+
+      res.json({ 
+        success: true, 
+        project: newProject,
+        message: 'Project created successfully' 
+      });
+    } catch (error) {
+      console.error('Project creation error:', error);
+      res.status(500).json({ error: 'Failed to create project' });
+    }
+  });
+
+  // Get user's projects
+  app.get("/api/users/:userId/projects", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      // Get projects created by user or for teams they're in
+      const userProjects = await db.select({
+        id: projects.id,
+        name: projects.name,
+        description: projects.description,
+        teamId: projects.teamId,
+        status: projects.status,
+        priority: projects.priority,
+        progress: projects.progress,
+        deadline: projects.deadline,
+        createdAt: projects.createdAt,
+        taskCount: sql<number>`(SELECT COUNT(*) FROM ${projectTasks} WHERE ${projectTasks.projectId} = ${projects.id})`,
+        completedTasks: sql<number>`(SELECT COUNT(*) FROM ${projectTasks} WHERE ${projectTasks.projectId} = ${projects.id} AND ${projectTasks.completed} = true)`
+      })
+      .from(projects)
+      .leftJoin(teamMembers, eq(projects.teamId, teamMembers.teamId))
+      .where(
+        or(
+          eq(projects.creatorId, userId),
+          eq(teamMembers.userId, userId)
+        )
+      );
+
+      // Calculate progress based on completed tasks
+      const projectsWithProgress = userProjects.map(project => ({
+        ...project,
+        progress: project.taskCount > 0 ? Math.round((project.completedTasks / project.taskCount) * 100) : 0
+      }));
+
+      res.json(projectsWithProgress);
+    } catch (error) {
+      console.error('Get user projects error:', error);
+      res.status(500).json({ error: 'Failed to get user projects' });
+    }
+  });
+
+  // Get project tasks
+  app.get("/api/projects/:projectId/tasks", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      
+      const tasks = await db.select().from(projectTasks).where(eq(projectTasks.projectId, projectId));
+      
+      res.json(tasks);
+    } catch (error) {
+      console.error('Get project tasks error:', error);
+      res.status(500).json({ error: 'Failed to get project tasks' });
     }
   });
 
