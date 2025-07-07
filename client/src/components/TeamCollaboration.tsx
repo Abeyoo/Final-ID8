@@ -30,9 +30,18 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
   });
 
   // Fetch user teams from the database
-  const { data: userTeams, isLoading: isTeamsLoading } = useQuery({
+  const { data: userTeams, isLoading: isTeamsLoading, error: teamsError } = useQuery({
     queryKey: [`/api/users/${userProfile?.id}/teams`],
     enabled: !!userProfile?.id,
+  });
+
+  // Debug logging
+  console.log('Team Collaboration Debug:', {
+    userProfile: userProfile?.id,
+    userTeams,
+    isTeamsLoading,
+    teamsError,
+    formattedTeams: formatTeamsForDisplay(userTeams || [])
   });
 
   // Demo data for John Doe only
@@ -149,8 +158,8 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
     }));
   };
 
-  // Use demo data for John Doe, real data for other users
-  const teams = userProfile?.email === 'john.doe@lincolnhs.org' ? demoTeams : formatTeamsForDisplay(userTeams || []);
+  // Always use real database data for all users
+  const teams = formatTeamsForDisplay(userTeams || []);
 
 
   const handleSkillChange = (index: number, value: string) => {
