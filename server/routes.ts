@@ -7,7 +7,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { db } from "./db";
-import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions, users } from "@shared/schema";
+import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions, teams, teamMembers, users } from "@shared/schema";
 import { eq, sql, and, or, isNull } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
@@ -474,6 +474,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Goal completion error:', error);
       res.status(500).json({ error: 'Failed to complete goal' });
+    }
+  });
+
+  // Create a new team
+  app.post("/api/teams", async (req, res) => {
+    try {
+      const { name, description, category, skills, maxMembers, isPrivate, userId } = req.body;
+      
+      // Validate required fields
+      if (!name || !description || !category || !userId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      // Create the team
+      const [newTeam] = await db.insert(teams).values({
+        name,
+        description,
+        creatorId: userId,
+        category,
+        skills: skills || [],
+        maxMembers: maxMembers || 5,
+        isPrivate: isPrivate || false,
+        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      }).returning();
+
+      // Add creator as team leader
+      await db.insert(teamMembers).values({
+        teamId: newTeam.id,
+        userId: userId,
+        role: 'Team Leader',
+      });
+
+      // Track team creation interaction
+      await personalityAI.trackTeamInteraction(userId, newTeam.id, 'created_team', {
+        teamName: name,
+        category,
+        skills: skills || [],
+        isLeader: true
+      });
+
+      res.json({ 
+        success: true, 
+        team: newTeam,
+        message: 'Team created successfully' 
+      });
+    } catch (error) {
+      console.error('Team creation error:', error);
+      res.status(500).json({ error: 'Failed to create team' });
+    }
+  });
+
+  // Get user's teams
+  app.get("/api/users/:userId/teams", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      // Get teams where user is a member
+      const userTeams = await db.select({
+        id: teams.id,
+        name: teams.name,
+        description: teams.description,
+        category: teams.category,
+        skills: teams.skills,
+        maxMembers: teams.maxMembers,
+        isPrivate: teams.isPrivate,
+        status: teams.status,
+        progress: teams.progress,
+        deadline: teams.deadline,
+        createdAt: teams.createdAt,
+        role: teamMembers.role,
+        memberCount: sql<number>`(SELECT COUNT(*) FROM ${teamMembers} WHERE ${teamMembers.teamId} = ${teams.id})`
+      })
+      .from(teams)
+      .innerJoin(teamMembers, eq(teams.id, teamMembers.teamId))
+      .where(eq(teamMembers.userId, userId));
+
+      res.json(userTeams);
+    } catch (error) {
+      console.error('Get user teams error:', error);
+      res.status(500).json({ error: 'Failed to get user teams' });
     }
   });
 

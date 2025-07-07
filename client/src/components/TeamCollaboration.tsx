@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Plus, Calendar, MessageSquare, FileText, CheckCircle, X, Edit3, Target, MoreHorizontal } from 'lucide-react';
-import { queryClient } from '@/lib/queryClient';
-import { useQuery } from '@tanstack/react-query';
+import { queryClient, apiRequest } from '@/lib/queryClient';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 interface TeamCollaborationProps {
   onNavigateToProject: (projectId: string) => void;
@@ -128,8 +128,29 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
     }
   ];
 
+  // Format teams data for display
+  const formatTeamsForDisplay = (teams: any[]) => {
+    return teams.map(team => ({
+      id: team.id,
+      name: team.name,
+      description: team.description,
+      members: team.memberCount || 1,
+      role: team.role,
+      progress: team.progress || 0,
+      deadline: team.deadline ? new Date(team.deadline).toISOString().split('T')[0] : null,
+      status: team.status,
+      category: team.category,
+      skills: team.skills || [],
+      project: null, // Projects will be connected separately
+      memberDetails: [
+        { id: 1, name: userProfile?.name || 'You', role: team.role, avatar: userProfile?.name?.split(' ').map(n => n[0]).join('') || 'U', online: true }
+      ],
+      joinRequests: []
+    }));
+  };
+
   // Use demo data for John Doe, real data for other users
-  const teams = userProfile?.email === 'john.doe@lincolnhs.org' ? demoTeams : (userTeams || []);
+  const teams = userProfile?.email === 'john.doe@lincolnhs.org' ? demoTeams : formatTeamsForDisplay(userTeams || []);
 
 
   const handleSkillChange = (index: number, value: string) => {
@@ -155,6 +176,39 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
     }
   };
 
+  // Create team mutation
+  const createTeamMutation = useMutation({
+    mutationFn: async (teamData: any) => {
+      return await apiRequest('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...teamData,
+          userId: userProfile?.id
+        })
+      });
+    },
+    onSuccess: () => {
+      // Invalidate teams query to refresh the list
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userProfile?.id}/teams`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userProfile?.id}/stats`] });
+      
+      // Reset form and close modal
+      setNewTeamForm({
+        name: '',
+        description: '',
+        category: 'Academic',
+        skills: [''],
+        maxMembers: 5,
+        isPrivate: false
+      });
+      setShowCreateTeamForm(false);
+    },
+    onError: (error) => {
+      console.error('Failed to create team:', error);
+    }
+  });
+
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -165,62 +219,16 @@ const TeamCollaboration: React.FC<TeamCollaborationProps> = ({ onNavigateToProje
     // Filter out empty skills
     const skills = newTeamForm.skills.filter(skill => skill.trim() !== '');
 
-    const newTeam = {
-      id: teams.length + 1,
+    const teamData = {
       name: newTeamForm.name,
       description: newTeamForm.description,
-      members: 1, // Creator is the first member
-      role: 'Team Leader',
-      progress: 0,
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
-      status: 'active' as const,
       category: newTeamForm.category,
       skills: skills.length > 0 ? skills : ['General'],
-      project: null, // New teams don't start with a project
-      memberDetails: [
-        { id: 1, name: 'John Doe', role: 'Team Leader', avatar: 'JD', online: true }
-      ],
-      joinRequests: []
+      maxMembers: newTeamForm.maxMembers,
+      isPrivate: newTeamForm.isPrivate
     };
 
-    setTeams(prev => [...prev, newTeam]);
-    
-    // Track team creation with AI personality analysis
-    try {
-      const response = await fetch(`/api/teams/${newTeam.id}/interaction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: 1, // TODO: Get from user context
-          actionType: 'created_team',
-          actionData: {
-            teamName: newTeam.name,
-            category: newTeam.category,
-            skills: skills,
-            isLeader: true
-          }
-        })
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Personality updated after team creation:', result.personalityUpdate);
-        // Invalidate the dashboard stats cache to show updated team projects count
-        queryClient.invalidateQueries({ queryKey: ['/api/users/1/stats'] });
-      }
-    } catch (error) {
-      console.error('Failed to track team creation:', error);
-    }
-
-    setNewTeamForm({
-      name: '',
-      description: '',
-      category: 'Academic',
-      skills: [''],
-      maxMembers: 5,
-      isPrivate: false
-    });
-    setShowCreateTeamForm(false);
+    createTeamMutation.mutate(teamData);
   };
 
   const handleProgressUpdate = (teamId: number) => {

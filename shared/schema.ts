@@ -56,10 +56,34 @@ export const achievements = pgTable("achievements", {
   earnedAt: timestamp("earned_at").defaultNow(),
 });
 
+export const teams = pgTable("teams", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  creatorId: varchar("creator_id").references(() => users.id),
+  category: text("category").notNull(),
+  skills: text("skills").array(),
+  maxMembers: integer("max_members").default(5),
+  isPrivate: boolean("is_private").default(false),
+  status: text("status").default("active"), // 'active', 'completed', 'paused'
+  progress: integer("progress").default(0),
+  deadline: timestamp("deadline"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const teamMembers = pgTable("team_members", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id),
+  userId: varchar("user_id").references(() => users.id),
+  role: text("role").default("Member"), // 'Team Leader', 'Member', 'Admin'
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
 export const teamInteractions = pgTable("team_interactions", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").references(() => users.id),
-  teamId: integer("team_id"),
+  teamId: integer("team_id").references(() => teams.id),
   actionType: text("action_type").notNull(), // 'created_team', 'joined_team', 'updated_progress', 'completed_task'
   actionData: jsonb("action_data"),
   timestamp: timestamp("timestamp").defaultNow(),
@@ -133,6 +157,17 @@ export const insertAchievementSchema = createInsertSchema(achievements).omit({
   earnedAt: true,
 });
 
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
 export const insertTeamInteractionSchema = createInsertSchema(teamInteractions).omit({
   id: true,
   timestamp: true,
@@ -159,6 +194,8 @@ export type User = typeof users.$inferSelect;
 export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
 export type Achievement = typeof achievements.$inferSelect;
+export type Team = typeof teams.$inferSelect;
+export type TeamMember = typeof teamMembers.$inferSelect;
 export type TeamInteraction = typeof teamInteractions.$inferSelect;
 export type Opportunity = typeof opportunities.$inferSelect;
 export type PersonalityPercentile = typeof personalityPercentiles.$inferSelect;
