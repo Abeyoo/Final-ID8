@@ -348,7 +348,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      // Handle both OAuth and traditional authentication
+      let userId;
+      if (req.user.claims) {
+        // OAuth user
+        userId = req.user.claims.sub;
+      } else {
+        // Traditional authentication user
+        userId = req.user.id;
+      }
+      
       const user = await storage.getUser(userId);
       
       if (!user) {
