@@ -513,7 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's dashboard statistics
   app.get("/api/users/:userId/stats", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -715,7 +715,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's assessment completion status
   app.get("/api/assessments/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -752,11 +752,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's personality insights
   app.get("/api/personality/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const user = await storage.getUser(userId);
       
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        // Return default values for new users instead of 404
+        return res.json({
+          personalityType: null,
+          personalityScores: null,
+          lastUpdated: null
+        });
       }
 
       res.json({

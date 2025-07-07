@@ -164,7 +164,8 @@ function App() {
 
   const handleSignUpSuccess = (profile: any) => {
     setIsNewUser(true);
-    setShowOnboarding(true);
+    // Reload the page to refresh authentication state
+    window.location.reload();
   };
 
   const handleBackToAuthChoice = () => {
