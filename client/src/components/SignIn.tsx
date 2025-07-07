@@ -70,22 +70,31 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn, onGoToOnboarding }) => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-    // Check credentials against mock users
-    const user = mockUsers.find(u => 
-      u.email.toLowerCase() === formData.email.toLowerCase() && 
-      u.password === formData.password
-    );
+      const data = await response.json();
 
-    if (user) {
-      onSignIn(user.profile);
-    } else {
-      setError('Invalid email or password. Please try again.');
+      if (data.success) {
+        onSignIn(data.user);
+      } else {
+        setError(data.error || 'Invalid email or password. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const isFormValid = formData.email && formData.password;

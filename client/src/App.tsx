@@ -16,6 +16,7 @@ import Portfolio from './components/Portfolio';
 import Onboarding from './components/Onboarding';
 import AuthChoice from './components/AuthChoice';
 import SignUp from './components/SignUp';
+import SignIn from './components/SignIn';
 
 type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'schedule' | 'community' | 'team-finder' | 'project-board' | 'ai-chat' | 'portfolio';
 
@@ -132,7 +133,7 @@ function App() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'auth-choice' | 'signup'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'auth-choice' | 'signup' | 'signin'>('landing');
   const [isNewUser, setIsNewUser] = useState(false);
 
   // Check if new user needs onboarding (no completed assessments and no personality type)
@@ -150,7 +151,7 @@ function App() {
 
   const handleSignIn = () => {
     setIsNewUser(false);
-    window.location.href = '/api/login';
+    setCurrentView('signin');
   };
 
   const handleCreateAccount = () => {
@@ -168,6 +169,11 @@ function App() {
 
   const handleBackToAuthChoice = () => {
     setCurrentView('auth-choice');
+  };
+
+  const handleSignInSuccess = (user: any) => {
+    // User will be handled by the auth hook
+    window.location.reload();
   };
 
   const handleSignOut = () => {
@@ -193,6 +199,14 @@ function App() {
         <SignUp
           onSignUp={handleSignUpSuccess}
           onBackToSignIn={handleBackToAuthChoice}
+        />
+      );
+    }
+    if (currentView === 'signin') {
+      return (
+        <SignIn
+          onSignIn={handleSignInSuccess}
+          onGoToOnboarding={handleCreateAccount}
         />
       );
     }

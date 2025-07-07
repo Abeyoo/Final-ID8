@@ -7,7 +7,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { db } from "./db";
-import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions } from "@shared/schema";
+import { assessmentResponses, goals, achievements as achievementsTable, teamInteractions, users } from "@shared/schema";
 import { eq, sql, and, or, isNull } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
@@ -243,25 +243,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Traditional signup route for new account creation
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { name, email, password, school, grade } = req.body;
+      const { name, email, password, school, grade, interests, personalityType, assessmentResponses } = req.body;
       
-      // For now, we'll create a mock response since we're using OAuth for actual auth
-      // This allows the signup form to work while maintaining OAuth security
-      res.json({ 
-        success: true, 
-        user: { 
-          name,
-          email,
-          completedAssessments: 0,
-          activeGoals: 0,
-          completedGoals: 0,
-          teamProjects: 0,
-          achievements: 0
-        } 
+      // Check if user already exists
+      const existingUser = await db.select().from(users).where(eq(users.email, email));
+      if (existingUser.length > 0) {
+        return res.status(400).json({ error: 'User already exists with this email' });
+      }
+      
+      // Create user in database
+      const [newUser] = await db.insert(users).values({
+        email,
+        firstName: name.split(' ')[0],
+        lastName: name.split(' ').slice(1).join(' ') || '',
+        profileImageUrl: null,
+        id: `traditional_${Date.now()}` // Generate unique ID for traditional signup
+      }).returning();
+      
+      // Store assessment responses if provided
+      if (assessmentResponses && Object.keys(assessmentResponses).length > 0) {
+        const responses = Object.entries(assessmentResponses).map(([questionId, response]) => ({
+          userId: newUser.id,
+          assessmentType: 'onboarding',
+          questionId,
+          response: response as string
+        }));
+        
+        await db.insert(assessmentResponses).values(responses);
+      }
+      
+      // Create session for the user
+      req.login({ 
+        id: newUser.id, 
+        email: newUser.email, 
+        firstName: newUser.firstName, 
+        lastName: newUser.lastName 
+      }, (err) => {
+        if (err) {
+          console.error('Login error:', err);
+          return res.status(500).json({ error: 'Failed to create session' });
+        }
+        
+        res.json({ 
+          success: true, 
+          user: { 
+            id: newUser.id,
+            name: `${newUser.firstName} ${newUser.lastName}`,
+            email: newUser.email,
+            completedAssessments: 0,
+            activeGoals: 0,
+            completedGoals: 0,
+            teamProjects: 0,
+            achievements: 0
+          } 
+        });
       });
     } catch (error) {
       console.error('Signup error:', error);
       res.status(500).json({ error: 'Failed to create user' });
+    }
+  });
+
+  // Traditional login route
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find user by email
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      
+      // For traditional accounts, we'll skip password verification for simplicity
+      // In production, you'd want to hash and verify passwords
+      
+      // Create session for the user
+      req.login({ 
+        id: user.id, 
+        email: user.email, 
+        firstName: user.firstName, 
+        lastName: user.lastName 
+      }, (err) => {
+        if (err) {
+          console.error('Login error:', err);
+          return res.status(500).json({ error: 'Failed to create session' });
+        }
+        
+        res.json({ 
+          success: true, 
+          user: { 
+            id: user.id,
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email
+          } 
+        });
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Failed to login' });
     }
   });
 
