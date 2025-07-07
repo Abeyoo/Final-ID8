@@ -60,15 +60,15 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection
       } lg:translate-x-0`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="flex-shrink-0 p-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               Thinkle
             </h1>
             <p className="text-sm text-gray-600 mt-1">Discover Your Potential</p>
           </div>
 
-          {/* Navigation Items */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          {/* Navigation Items - Scrollable */}
+          <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.id;
@@ -93,8 +93,8 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection
             })}
           </nav>
 
-          {/* User Profile */}
-          <div className="p-4 border-t border-gray-200">
+          {/* User Profile - Fixed at bottom */}
+          <div className="flex-shrink-0 p-4 border-t border-gray-200">
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold">
