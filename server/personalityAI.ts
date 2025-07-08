@@ -129,13 +129,15 @@ export class PersonalityAnalysisService {
           {
             role: "system",
             content: `You are an expert personality psychologist analyzing student behavior patterns. 
-            Based on comprehensive behavioral data, provide personality insights using these 6 categories:
+            Based on comprehensive behavioral data, provide personality insights using these 8 categories:
             - Leader: Takes initiative, organizes teams, achieves ambitious goals
             - Innovator: Creative solutions, generates original ideas, adaptable
             - Collaborator: Team-oriented, builds relationships, seeks harmony
             - Perfectionist: Detail-oriented, high standards, quality-focused
             - Explorer: Curious learner, seeks new experiences, research-oriented
             - Mediator: Diplomatic peacemaker, resolves conflicts, finds common ground
+            - Strategist: Long-term planning, analytical thinking, systematic approach
+            - Anchor: Stable foundation, reliable support, consistent performance
             
             Respond with JSON in this exact format:
             {
