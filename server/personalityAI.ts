@@ -294,51 +294,103 @@ Personality Type Definitions:
       Anchor: 0.125
     };
 
-    // Analyze assessment responses for personality indicators
+    // Analyze assessment responses with balanced personality indicators
     behaviorData.assessmentResponses.forEach(response => {
       const responseText = response.response.toLowerCase();
-      if (responseText.includes('take_charge') || responseText.includes('lead')) {
-        scores.Leader += 0.08;
+      
+      // Leader indicators (reduced bias)
+      if (responseText.includes('take_charge') || responseText.includes('lead') || responseText.includes('organize')) {
+        scores.Leader += 0.06;
       }
-      if (responseText.includes('creative') || responseText.includes('innovative')) {
+      
+      // Innovator indicators (expanded)
+      if (responseText.includes('creative') || responseText.includes('innovative') || 
+          responseText.includes('original') || responseText.includes('brainstorm') ||
+          responseText.includes('think_outside') || responseText.includes('experiment')) {
         scores.Innovator += 0.08;
       }
-      if (responseText.includes('team') || responseText.includes('collaborate')) {
+      
+      // Collaborator indicators (expanded)
+      if (responseText.includes('team') || responseText.includes('collaborate') || 
+          responseText.includes('together') || responseText.includes('consensus') ||
+          responseText.includes('include_everyone') || responseText.includes('group')) {
         scores.Collaborator += 0.08;
       }
-      if (responseText.includes('detail') || responseText.includes('quality')) {
+      
+      // Perfectionist indicators (expanded)
+      if (responseText.includes('detail') || responseText.includes('quality') || 
+          responseText.includes('thorough') || responseText.includes('precise') ||
+          responseText.includes('excellence') || responseText.includes('accurate')) {
         scores.Perfectionist += 0.08;
       }
-      if (responseText.includes('explore') || responseText.includes('research')) {
+      
+      // Explorer indicators (expanded)
+      if (responseText.includes('explore') || responseText.includes('research') || 
+          responseText.includes('learn') || responseText.includes('discover') ||
+          responseText.includes('investigate') || responseText.includes('curious')) {
         scores.Explorer += 0.08;
       }
-      if (responseText.includes('mediate') || responseText.includes('resolve')) {
+      
+      // Mediator indicators (expanded)
+      if (responseText.includes('mediate') || responseText.includes('resolve') || 
+          responseText.includes('peaceful') || responseText.includes('diplomatic') ||
+          responseText.includes('understand') || responseText.includes('harmony')) {
         scores.Mediator += 0.08;
       }
-      if (responseText.includes('plan') || responseText.includes('strategy')) {
+      
+      // Strategist indicators (expanded)
+      if (responseText.includes('plan') || responseText.includes('strategy') || 
+          responseText.includes('analyze') || responseText.includes('systematic') ||
+          responseText.includes('logical') || responseText.includes('future')) {
         scores.Strategist += 0.08;
       }
-      if (responseText.includes('support') || responseText.includes('stable')) {
+      
+      // Anchor indicators (expanded)
+      if (responseText.includes('support') || responseText.includes('stable') || 
+          responseText.includes('reliable') || responseText.includes('consistent') ||
+          responseText.includes('foundation') || responseText.includes('steady')) {
         scores.Anchor += 0.08;
       }
     });
 
-    // Adjust based on goal completion rate and patterns
+    // Adjust based on goal completion rate and patterns (balanced approach)
     const completedGoals = behaviorData.goals.filter(g => g.completed).length;
     const totalGoals = behaviorData.goals.length;
     
     if (totalGoals > 0) {
       const completionRate = completedGoals / totalGoals;
+      
+      // High completion rate indicates different personalities, not just leadership
       if (completionRate > 0.8) {
-        scores.Perfectionist += 0.2;
-        scores.Leader += 0.15;
-        scores.Anchor += 0.1;
-      } else if (completionRate > 0.5) {
-        scores.Strategist += 0.15;
-        scores.Perfectionist += 0.1;
-      } else if (completionRate < 0.3) {
-        scores.Explorer += 0.2;
-        scores.Innovator += 0.15;
+        scores.Perfectionist += 0.15;  // Reduced Leader bias
+        scores.Anchor += 0.12;
+        scores.Strategist += 0.08;
+        scores.Leader += 0.08;  // Much reduced
+      } else if (completionRate > 0.6) {
+        scores.Strategist += 0.12;
+        scores.Perfectionist += 0.08;
+        scores.Anchor += 0.06;
+      } else if (completionRate > 0.3) {
+        scores.Collaborator += 0.1;
+        scores.Mediator += 0.08;
+      } else {
+        scores.Explorer += 0.15;
+        scores.Innovator += 0.12;
+      }
+      
+      // Analyze goal diversity for personality insights
+      const goalCategories = behaviorData.goals.reduce((acc, goal) => {
+        acc[goal.category] = (acc[goal.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const categoryCount = Object.keys(goalCategories).length;
+      if (categoryCount > 3) {
+        scores.Explorer += 0.1;  // Diverse interests
+        scores.Innovator += 0.08;
+      } else if (categoryCount === 1) {
+        scores.Perfectionist += 0.1;  // Focused approach
+        scores.Anchor += 0.08;
       }
     }
 
