@@ -3,6 +3,135 @@ import { Brain, Play, CheckCircle, BarChart3, Lightbulb, Star, Target, Users, Za
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 
+// Component to display actual strength results
+const StrengthResults: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
+  const [personalityData, setPersonalityData] = useState<any>(null);
+  const [percentileData, setPercentileData] = useState<any>({});
+
+  useEffect(() => {
+    if (userProfile?.id) {
+      fetchPersonalityData();
+      fetchPercentileData();
+    }
+  }, [userProfile?.id]);
+
+  const fetchPersonalityData = async () => {
+    try {
+      const response = await fetch(`/api/personality/${userProfile.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPersonalityData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch personality data:', error);
+    }
+  };
+
+  const fetchPercentileData = async () => {
+    try {
+      const response = await fetch(`/api/personality/${userProfile.id}/percentiles`);
+      if (response.ok) {
+        const data = await response.json();
+        setPercentileData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch percentile data:', error);
+    }
+  };
+
+  const personalityInsights = {
+    Leader: {
+      strengths: ['Takes charge', 'Motivates others', 'Strategic thinking', 'Decision making'],
+    },
+    Innovator: {
+      strengths: ['Innovation', 'Creative thinking', 'Problem solving', 'Vision'],
+    },
+    Collaborator: {
+      strengths: ['Team building', 'Communication', 'Empathy', 'Conflict resolution'],
+    },
+    Perfectionist: {
+      strengths: ['Attention to detail', 'Quality focus', 'Organization', 'Reliability'],
+    },
+    Explorer: {
+      strengths: ['Learning agility', 'Curiosity', 'Research skills', 'Open-mindedness'],
+    },
+    Mediator: {
+      strengths: ['Conflict resolution', 'Diplomacy', 'Understanding', 'Bridge building'],
+    },
+    Strategist: {
+      strengths: ['Strategic planning', 'Pattern analysis', 'Long-term thinking', 'Risk assessment'],
+    },
+    Anchor: {
+      strengths: ['Reliability', 'Stability', 'Support', 'Calm under pressure'],
+    }
+  };
+
+  const getStrengthsFromAI = () => {
+    if (personalityData?.personalityScores) {
+      const scores = personalityData.personalityScores;
+      
+      const aiStrengths = Object.entries(scores).map(([type, score]: [string, any], index: number) => {
+        const strengthNames = personalityInsights[type as keyof typeof personalityInsights]?.strengths || [type];
+        const primaryStrength = strengthNames[0] || type;
+        
+        const baseScore = Math.round(score * 100);
+        const confidenceMultiplier = personalityData.confidence || 0.8;
+        const activityLevel = userProfile?.completedAssessments || 0;
+        
+        let masteryLevel = baseScore * confidenceMultiplier;
+        
+        if (activityLevel >= 3) {
+          masteryLevel += Math.min(8, activityLevel * 1.5);
+        }
+        
+        const finalProgress = Math.min(95, Math.max(25, Math.round(masteryLevel)));
+        
+        return {
+          name: primaryStrength,
+          score: finalProgress,
+          aiScore: score,
+          color: ['bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-pink-500'][index % 5]
+        };
+      });
+      
+      return aiStrengths.sort((a, b) => b.aiScore - a.aiScore).slice(0, 5);
+    }
+    
+    // Fallback if no AI data
+    return [
+      { name: 'Complete assessments', score: 0, color: 'bg-gray-400' },
+      { name: 'for personalized', score: 0, color: 'bg-gray-400' },
+      { name: 'strength analysis', score: 0, color: 'bg-gray-400' }
+    ];
+  };
+
+  const strengths = getStrengthsFromAI();
+
+  return (
+    <div className="space-y-4">
+      {strengths.map((strength, index) => (
+        <div key={index}>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">{strength.name}</span>
+            <span className="text-sm font-semibold text-gray-900">{strength.score}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full ${strength.color} transition-all duration-300`}
+              style={{ width: `${strength.score}%` }}
+            />
+          </div>
+        </div>
+      ))}
+      {personalityData?.personalityScores && (
+        <p className="text-xs text-gray-500 mt-3">
+          Based on AI personality analysis • Last updated: {new Date(personalityData.lastUpdated).toLocaleDateString()}
+        </p>
+      )}
+    </div>
+  );
+};
+
 interface SelfAssessmentProps {
   userProfile?: any;
 }
@@ -401,28 +530,7 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Strength Categories</h3>
-            <div className="space-y-4">
-              {[
-                { name: 'Leadership', score: 95, color: 'bg-purple-500' },
-                { name: 'Communication', score: 92, color: 'bg-blue-500' },
-                { name: 'Problem Solving', score: 90, color: 'bg-green-500' },
-                { name: 'Creativity', score: 88, color: 'bg-orange-500' },
-                { name: 'Empathy', score: 85, color: 'bg-pink-500' }
-              ].map((strength, index) => (
-                <div key={index}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">{strength.name}</span>
-                    <span className="text-sm font-semibold text-gray-900">{strength.score}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${strength.color} transition-all duration-300`}
-                      style={{ width: `${strength.score}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <StrengthResults userProfile={userProfile} />
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
