@@ -146,31 +146,51 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     if (personalityData?.personalityScores) {
       const scores = personalityData.personalityScores;
       
-      // Convert AI personality scores to strength format
+      // Convert AI personality scores to strength format with accurate calculation
       const aiStrengths = Object.entries(scores).map(([type, score]: [string, any], index: number) => {
         const strengthNames = personalityInsights[type as keyof typeof personalityInsights]?.strengths || [type];
         const primaryStrength = strengthNames[0] || type;
         
-        // Convert AI score (0-1) to mastery percentage  
-        const masteryPercentage = Math.round(score * 100);
-        // Add small bonus for user engagement
-        const activityBonus = Math.min(5, (userProfile?.completedAssessments || 0));
-        const finalProgress = Math.min(100, masteryPercentage + activityBonus);
+        // More realistic mastery calculation based on AI confidence and user activity
+        const baseScore = Math.round(score * 100); // AI score as percentage
+        const confidenceMultiplier = personalityData.confidence || 0.8;
+        const activityLevel = userProfile?.completedAssessments || 0;
+        
+        // Calculate mastery with realistic bounds
+        let masteryLevel = baseScore * confidenceMultiplier;
+        
+        // Add activity bonus only for meaningful engagement
+        if (activityLevel >= 3) {
+          masteryLevel += Math.min(8, activityLevel * 1.5);
+        }
+        
+        // Cap at realistic maximum (95% to maintain credibility)
+        const finalProgress = Math.min(95, Math.max(25, Math.round(masteryLevel)));
+        
+        // Use actual percentile data when available, otherwise calculate based on score
+        const actualPercentile = percentileData[type]?.percentile;
+        let calculatedPercentile = actualPercentile;
+        
+        if (!actualPercentile) {
+          // More conservative percentile calculation
+          calculatedPercentile = Math.round(30 + (score * 50) + (activityLevel * 3));
+          calculatedPercentile = Math.min(98, Math.max(15, calculatedPercentile));
+        }
         
         return {
           name: primaryStrength,
           personalityType: type,
           progress: finalProgress,
           aiScore: score,
-          percentile: percentileData[type]?.percentile || Math.round(60 + score * 30), // Dynamic fallback based on AI score
+          percentile: calculatedPercentile,
           color: getColorForStrength(primaryStrength, index),
           description: getStrengthDescription(primaryStrength),
-          confidence: personalityData.confidence || 0.8
+          confidence: confidenceMultiplier
         };
       });
       
-      // Sort by AI score and return top strengths
-      return aiStrengths.sort((a, b) => b.aiScore - a.aiScore);
+      // Sort by AI score and return top 5 strengths
+      return aiStrengths.sort((a, b) => b.aiScore - a.aiScore).slice(0, 5);
     }
     
     // Fallback to personality type-based strengths if no AI data
@@ -182,26 +202,35 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     const baseStrengths = personalityInsights[personalityType as keyof typeof personalityInsights]?.strengths || [];
     
     return baseStrengths.map((strength: string, index: number) => {
-      const baseProgress = 85 - (index * 5); // Lower base for fallback
-      const activityBonus = Math.min(10, (userProfile?.completedAssessments || 0) * 2);
-      const finalProgress = Math.min(100, baseProgress + activityBonus);
+      // More conservative fallback calculations
+      const activityLevel = userProfile?.completedAssessments || 0;
       
-      // Generate variable percentiles based on user activity and strength ranking
-      const basePercentile = Math.max(20, 75 - (index * 15) - Math.random() * 20);
-      const activityPercentileBonus = Math.min(15, (userProfile?.completedAssessments || 0) * 3);
-      const finalPercentile = Math.min(95, Math.round(basePercentile + activityPercentileBonus));
+      // Base progress starts lower and increases with actual engagement
+      const baseProgress = 65 - (index * 8); // More realistic base
+      let activityBonus = 0;
+      
+      if (activityLevel >= 2) {
+        activityBonus = Math.min(12, activityLevel * 2);
+      }
+      
+      const finalProgress = Math.min(85, Math.max(35, baseProgress + activityBonus));
+      
+      // More realistic percentile calculation
+      const basePercentile = Math.max(25, 60 - (index * 12));
+      const activityPercentileBonus = activityLevel >= 3 ? Math.min(20, activityLevel * 4) : 0;
+      const finalPercentile = Math.min(90, Math.round(basePercentile + activityPercentileBonus));
       
       return {
         name: strength,
         personalityType,
         progress: finalProgress,
-        aiScore: 0.8 - (index * 0.1),
+        aiScore: 0.7 - (index * 0.12),
         percentile: finalPercentile,
         color: getColorForStrength(strength, index),
         description: getStrengthDescription(strength),
-        confidence: 0.6
+        confidence: 0.5 // Lower confidence for fallback
       };
-    });
+    }).slice(0, 4); // Show fewer strengths for fallback
   };
 
   const getColorForStrength = (strength: string, index: number) => {

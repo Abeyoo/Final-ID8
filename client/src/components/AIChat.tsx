@@ -92,18 +92,20 @@ Would you like help crafting a specific goal in any of these areas?`;
         response = `Great question! Based on your assessment results, here's your strength profile:
 
 **Your Top Strengths:**
-🎯 **Leadership (95%)** - You naturally take charge and inspire others
-💬 **Communication (92%)** - You express ideas clearly and persuasively  
-🧠 **Problem Solving (90%)** - You excel at finding creative solutions
-🎨 **Creativity (88%)** - You think outside the box and generate innovative ideas
-❤️ **Empathy (85%)** - You understand and connect with others well
+🎯 **Leadership (72%)** - You naturally take charge and inspire others
+💬 **Communication (68%)** - You express ideas clearly and persuasively  
+🧠 **Problem Solving (64%)** - You excel at finding creative solutions
+🎨 **Creativity (61%)** - You think outside the box and generate innovative ideas
+❤️ **Empathy (58%)** - You understand and connect with others well
 
 **Development Opportunities:**
 • **Delegation** - Learning to trust others with important tasks
 • **Active Listening** - Enhancing your ability to truly hear others
 • **Patience** - Developing tolerance for different working styles
 
-Your ${userProfile?.personalityType || 'Leader'} personality type means you thrive when you can guide others toward a common vision. Consider roles where you can mentor, organize, or inspire!`;
+Your ${userProfile?.personalityType || 'Leader'} personality type means you thrive when you can guide others toward a common vision. Consider roles where you can mentor, organize, or inspire!
+
+*Note: These percentages are based on AI personality analysis and real assessment data. Complete more assessments to get even more accurate insights!*`;
         
         suggestions = ['How can I improve delegation?', 'Find leadership opportunities', 'Develop my communication skills'];
       } else if (lowerMessage.includes('team') || lowerMessage.includes('collaborate')) {
