@@ -413,6 +413,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Personality Analysis Routes
   
+  // Trigger initial personality analysis for new users without personality type
+  app.post("/api/personality/initialize/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Check if user already has personality type
+      const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (existingUser.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      if (existingUser[0].personalityType) {
+        return res.json({ success: true, message: 'User already has personality type', personality: existingUser[0].personalityType });
+      }
+      
+      // Trigger personality analysis for new user
+      const analysis = await personalityAI.analyzeUserPersonality(userId);
+      res.json({ success: true, personalityUpdate: analysis });
+    } catch (error) {
+      console.error('Initialize personality error:', error);
+      res.status(500).json({ error: 'Failed to initialize personality' });
+    }
+  });
+  
   // Track assessment response and trigger personality analysis
   app.post("/api/assessment/response", async (req, res) => {
     try {

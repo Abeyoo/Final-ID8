@@ -282,16 +282,19 @@ Personality Type Definitions:
     confidence: number;
     reasoning: string;
   } {
-    // Enhanced behavioral pattern analysis
+    // Enhanced behavioral pattern analysis with randomized starting points to avoid Leader bias
+    const baseScores = [0.115, 0.12, 0.125, 0.13, 0.135];
+    const shuffledScores = [...baseScores.sort(() => Math.random() - 0.5), 0.125, 0.125, 0.125];
+    
     const scores: PersonalityScores = {
-      Leader: 0.125,
-      Innovator: 0.125,
-      Collaborator: 0.125,
-      Perfectionist: 0.125,
-      Explorer: 0.125,
-      Mediator: 0.125,
-      Strategist: 0.125,
-      Anchor: 0.125
+      Leader: shuffledScores[0],
+      Innovator: shuffledScores[1], 
+      Collaborator: shuffledScores[2],
+      Perfectionist: shuffledScores[3],
+      Explorer: shuffledScores[4],
+      Mediator: shuffledScores[5],
+      Strategist: shuffledScores[6],
+      Anchor: shuffledScores[7]
     };
 
     // Analyze assessment responses with balanced personality indicators
