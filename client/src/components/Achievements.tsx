@@ -1,127 +1,30 @@
 import React from 'react';
-import { Award, Trophy, Star, Medal, Target, TrendingUp } from 'lucide-react';
+import { Award, Trophy, Star, Medal, Target, TrendingUp, BookOpen, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../hooks/useAuth';
 
 const Achievements: React.FC = () => {
-  const badges = [
-    {
-      id: 1,
-      name: 'First Assessment',
-      description: 'Completed your first self-assessment',
-      icon: Star,
-      earned: true,
-      earnedDate: '2024-01-15',
-      category: 'Getting Started',
-      rarity: 'common'
-    },
-    {
-      id: 2,
-      name: 'Goal Setter',
-      description: 'Created your first development goal',
-      icon: Target,
-      earned: true,
-      earnedDate: '2024-01-20',
-      category: 'Planning',
-      rarity: 'common'
-    },
-    {
-      id: 3,
-      name: 'Team Player',
-      description: 'Joined your first team collaboration',
-      icon: Award,
-      earned: true,
-      earnedDate: '2024-02-01',
-      category: 'Collaboration',
-      rarity: 'common'
-    },
-    {
-      id: 4,
-      name: 'Communication Master',
-      description: 'Achieved 90% progress in communication skills',
-      icon: Medal,
-      earned: true,
-      earnedDate: '2024-02-15',
-      category: 'Skills',
-      rarity: 'rare'
-    },
-    {
-      id: 5,
-      name: 'Leadership Champion',
-      description: 'Led a team project to successful completion',
-      icon: Trophy,
-      earned: false,
-      earnedDate: null,
-      category: 'Leadership',
-      rarity: 'epic'
-    },
-    {
-      id: 6,
-      name: 'Strength Explorer',
-      description: 'Completed all available self-assessments',
-      icon: Star,
-      earned: false,
-      earnedDate: null,
-      category: 'Discovery',
-      rarity: 'rare'
-    },
-    {
-      id: 7,
-      name: 'Mentor',
-      description: 'Helped 5 peers with their development goals',
-      icon: Award,
-      earned: false,
-      earnedDate: null,
-      category: 'Community',
-      rarity: 'epic'
-    },
-    {
-      id: 8,
-      name: 'Consistent Achiever',
-      description: 'Completed goals for 3 consecutive months',
-      icon: TrendingUp,
-      earned: false,
-      earnedDate: null,
-      category: 'Consistency',
-      rarity: 'legendary'
-    }
-  ];
+  const { user } = useAuth();
+  
+  // Fetch user achievements
+  const { data: achievementsData, isLoading: isAchievementsLoading } = useQuery({
+    queryKey: [`/api/achievements/${user?.id}`],
+    enabled: !!user?.id,
+  });
 
-  const milestones = [
-    {
-      title: 'First Month Complete',
-      description: 'Successfully completed your first month of development',
-      progress: 100,
-      completed: true,
-      completedDate: '2024-02-15'
-    },
-    {
-      title: 'Team Leader',
-      description: 'Lead a team project from start to finish',
-      progress: 75,
-      completed: false,
-      completedDate: null
-    },
-    {
-      title: 'Skill Master',
-      description: 'Reach 90% proficiency in 5 different skills',
-      progress: 60,
-      completed: false,
-      completedDate: null
-    },
-    {
-      title: 'Community Champion',
-      description: 'Actively participate in community for 6 months',
-      progress: 33,
-      completed: false,
-      completedDate: null
+  const getAchievementIcon = (achievementId: string) => {
+    switch (achievementId) {
+      case 'first_assessment': return Star;
+      case 'goal_setter': return Target;
+      case 'team_player': return Users;
+      case 'goal_achiever': return Trophy;
+      case 'assessment_master': return BookOpen;
+      case 'goal_champion': return Medal;
+      case 'team_leader': return Award;
+      case 'consistent_achiever': return TrendingUp;
+      default: return Star;
     }
-  ];
-
-  const stats = [
-    { label: 'Total Badges', value: badges.filter(b => b.earned).length, total: badges.length, icon: Award },
-    { label: 'Goals Completed', value: 12, total: 15, icon: Target },
-    { label: 'Teams Joined', value: 3, total: null, icon: Trophy },
-    { label: 'Days Active', value: 45, total: null, icon: TrendingUp }
-  ];
+  };
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -143,6 +46,68 @@ const Achievements: React.FC = () => {
     }
   };
 
+  if (isAchievementsLoading) {
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Achievements</h1>
+          <p className="text-gray-600">Loading your accomplishments...</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
+              <div className="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const badges = achievementsData?.achievements || [];
+  const stats = achievementsData?.stats || { totalBadges: 0, completedGoals: 0, teamsJoined: 0, totalAchievements: 0 };
+
+  // Calculate milestones based on actual progress
+  const milestones = [
+    {
+      title: 'Getting Started',
+      description: 'Complete your first assessment and create a goal',
+      progress: Math.min(100, ((stats.totalBadges >= 2 ? 1 : stats.totalBadges / 2) * 100)),
+      completed: stats.totalBadges >= 2,
+      completedDate: stats.totalBadges >= 2 ? badges.find(b => b.earned)?.earnedDate : null
+    },
+    {
+      title: 'Active Learner',
+      description: 'Complete 3 assessments and 2 goals',
+      progress: Math.min(100, ((stats.completedGoals + Math.min(stats.totalBadges, 3)) / 5) * 100),
+      completed: stats.completedGoals >= 2 && stats.totalBadges >= 3,
+      completedDate: null
+    },
+    {
+      title: 'Team Collaborator',
+      description: 'Join teams and complete collaborative projects',
+      progress: Math.min(100, (stats.teamsJoined / 3) * 100),
+      completed: stats.teamsJoined >= 3,
+      completedDate: null
+    },
+    {
+      title: 'Achievement Master',
+      description: 'Earn multiple rare and epic achievements',
+      progress: Math.min(100, (stats.totalAchievements / 8) * 100),
+      completed: stats.totalAchievements >= 8,
+      completedDate: null
+    }
+  ];
+
+  const achievementStats = [
+    { label: 'Total Badges', value: stats.totalBadges, total: badges.length, icon: Award },
+    { label: 'Goals Completed', value: stats.completedGoals, total: null, icon: Target },
+    { label: 'Teams Joined', value: stats.teamsJoined, total: null, icon: Users },
+    { label: 'Total Achievements', value: stats.totalAchievements, total: null, icon: TrendingUp }
+  ];
+
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
@@ -153,7 +118,7 @@ const Achievements: React.FC = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => {
+        {achievementStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -187,7 +152,7 @@ const Achievements: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Badges</h2>
           <div className="grid grid-cols-2 gap-4">
             {badges.map((badge) => {
-              const Icon = badge.icon;
+              const Icon = getAchievementIcon(badge.id);
               return (
                 <div
                   key={badge.id}
@@ -255,7 +220,7 @@ const Achievements: React.FC = () => {
                       <div>
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-xs text-gray-500">Progress</span>
-                          <span className="text-xs font-semibold text-gray-700">{milestone.progress}%</span>
+                          <span className="text-xs font-semibold text-gray-700">{Math.round(milestone.progress)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
@@ -288,7 +253,7 @@ const Achievements: React.FC = () => {
         <h2 className="text-xl font-semibold mb-4">Recent Achievements</h2>
         <div className="space-y-3">
           {badges.filter(b => b.earned).slice(-3).map((badge) => {
-            const Icon = badge.icon;
+            const Icon = getAchievementIcon(badge.id);
             return (
               <div key={badge.id} className="flex items-center space-x-3 bg-white bg-opacity-20 rounded-lg p-3">
                 <div className="w-10 h-10 bg-white bg-opacity-30 rounded-lg flex items-center justify-center">
@@ -306,6 +271,11 @@ const Achievements: React.FC = () => {
               </div>
             );
           })}
+          {badges.filter(b => b.earned).length === 0 && (
+            <div className="text-center py-4">
+              <p className="text-white opacity-75">No achievements yet. Start by completing assessments and creating goals!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

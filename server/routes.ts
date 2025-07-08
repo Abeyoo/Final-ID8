@@ -411,6 +411,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Achievements Routes
+  app.get("/api/achievements/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Get user's achievements from database
+      const userAchievements = await db.select().from(achievements).where(eq(achievements.userId, userId));
+      
+      // Get user stats for calculating available achievements
+      const stats = await getUserStats(userId);
+      
+      // Define available achievements with conditions
+      const availableAchievements = [
+        {
+          id: 'first_assessment',
+          name: 'First Assessment',
+          description: 'Completed your first self-assessment',
+          category: 'Getting Started',
+          rarity: 'common',
+          condition: () => stats.completedAssessments >= 1
+        },
+        {
+          id: 'goal_setter',
+          name: 'Goal Setter', 
+          description: 'Created your first development goal',
+          category: 'Planning',
+          rarity: 'common',
+          condition: () => (stats.activeGoals + stats.completedGoals) >= 1
+        },
+        {
+          id: 'team_player',
+          name: 'Team Player',
+          description: 'Joined your first team collaboration',
+          category: 'Collaboration', 
+          rarity: 'common',
+          condition: () => stats.teamProjects >= 1
+        },
+        {
+          id: 'goal_achiever',
+          name: 'Goal Achiever',
+          description: 'Completed your first development goal',
+          category: 'Achievement',
+          rarity: 'common',
+          condition: () => stats.completedGoals >= 1
+        },
+        {
+          id: 'assessment_master',
+          name: 'Assessment Master',
+          description: 'Completed 3 different assessments',
+          category: 'Discovery',
+          rarity: 'rare',
+          condition: () => stats.completedAssessments >= 3
+        },
+        {
+          id: 'goal_champion',
+          name: 'Goal Champion',
+          description: 'Completed 5 development goals',
+          category: 'Achievement',
+          rarity: 'rare',
+          condition: () => stats.completedGoals >= 5
+        },
+        {
+          id: 'team_leader',
+          name: 'Team Leader',
+          description: 'Active in 3 different team projects',
+          category: 'Leadership',
+          rarity: 'epic',
+          condition: () => stats.teamProjects >= 3
+        },
+        {
+          id: 'consistent_achiever',
+          name: 'Consistent Achiever',
+          description: 'Completed goals regularly over time',
+          category: 'Consistency',
+          rarity: 'legendary',
+          condition: () => stats.completedGoals >= 10 && stats.achievements >= 5
+        }
+      ];
+      
+      // Check which achievements user has earned
+      const earnedAchievements = availableAchievements.filter(achievement => {
+        const hasEarned = userAchievements.some(ua => ua.achievementType === achievement.id);
+        const meetsCondition = achievement.condition();
+        
+        // Auto-award achievements if user meets condition but hasn't earned yet
+        if (meetsCondition && !hasEarned) {
+          personalityAI.trackAchievement(userId, achievement.id, achievement.name, achievement.description);
+        }
+        
+        return meetsCondition;
+      });
+      
+      res.json({
+        achievements: availableAchievements.map(achievement => ({
+          ...achievement,
+          earned: earnedAchievements.some(ea => ea.id === achievement.id),
+          earnedDate: userAchievements.find(ua => ua.achievementType === achievement.id)?.earnedAt || null
+        })),
+        stats: {
+          totalBadges: earnedAchievements.length,
+          completedGoals: stats.completedGoals,
+          teamsJoined: stats.teamProjects,
+          totalAchievements: stats.achievements
+        }
+      });
+    } catch (error) {
+      console.error('Achievements fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch achievements' });
+    }
+  });
+
   // Personality Analysis Routes
   
   // Trigger initial personality analysis for new users without personality type
