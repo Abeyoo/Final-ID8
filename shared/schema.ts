@@ -20,6 +20,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  passwordHash: text("password_hash"), // For traditional accounts
   personalityType: text("personality_type"),
   personalityScores: jsonb("personality_scores"), // Store scores for all 6 personality types
   createdAt: timestamp("created_at").defaultNow(),

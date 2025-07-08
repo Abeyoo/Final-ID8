@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { personalityAI } from "./personalityAI";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
+import bcrypt from "bcryptjs";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { db } from "./db";
@@ -251,12 +252,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'User already exists with this email' });
       }
       
+      // Hash password for traditional accounts
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
       // Create user in database
       const [newUser] = await db.insert(users).values({
         email,
         firstName: name.split(' ')[0],
         lastName: name.split(' ').slice(1).join(' ') || '',
         profileImageUrl: null,
+        passwordHash, // Store hashed password
         id: `traditional_${Date.now()}` // Generate unique ID for traditional signup
       }).returning();
       
@@ -315,8 +321,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
       
-      // For traditional accounts, we'll skip password verification for simplicity
-      // In production, you'd want to hash and verify passwords
+      // Verify password for traditional accounts
+      if (user.id.startsWith('traditional_')) {
+        if (!password || !user.passwordHash) {
+          return res.status(401).json({ error: 'Invalid email or password' });
+        }
+        
+        // Compare password with stored hash
+        const passwordValid = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordValid) {
+          return res.status(401).json({ error: 'Invalid email or password' });
+        }
+      }
       
       // Create session for the user
       req.login({ 
