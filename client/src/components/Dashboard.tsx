@@ -83,23 +83,48 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const getRecentActivities = () => {
     const activities = [];
     
-    // Generate activities based on user data
+    // Only show activities for actual user engagement
+    const stats = userStats as any;
     
-    // Regular logic for other users
-    if (userProfile?.completedAssessments > 0) {
-      activities.push({ action: 'Completed Personality Assessment', time: '2 hours ago', type: 'assessment' });
+    if (stats?.completedAssessments > 0) {
+      activities.push({ 
+        action: `Completed ${stats.completedAssessments} assessment${stats.completedAssessments > 1 ? 's' : ''}`, 
+        time: 'Recently', 
+        type: 'assessment' 
+      });
     }
     
-    if (userProfile?.teamProjects > 0) {
-      activities.push({ action: 'Joined Robotics Team', time: '1 day ago', type: 'team' });
+    if (stats?.completedGoals > 0) {
+      activities.push({ 
+        action: `Achieved ${stats.completedGoals} goal${stats.completedGoals > 1 ? 's' : ''}`, 
+        time: 'Recently', 
+        type: 'goal' 
+      });
     }
     
-    if (userProfile?.achievements > 0) {
-      activities.push({ action: 'Earned Leadership Badge', time: '3 days ago', type: 'achievement' });
+    if (stats?.teamProjects > 0) {
+      activities.push({ 
+        action: `Joined ${stats.teamProjects} team project${stats.teamProjects > 1 ? 's' : ''}`, 
+        time: 'Recently', 
+        type: 'team' 
+      });
     }
     
-    if (userProfile?.activeGoals > 0) {
-      activities.push({ action: 'Set new goal: Public Speaking', time: '1 week ago', type: 'goal' });
+    if (personalityData?.personalityType) {
+      activities.push({ 
+        action: `AI identified you as: ${personalityData.personalityType}`, 
+        time: new Date(personalityData.lastUpdated).toLocaleDateString(), 
+        type: 'analysis' 
+      });
+    }
+    
+    // Show message if no real activities yet
+    if (activities.length === 0) {
+      activities.push({ 
+        action: 'Complete your first assessment to see activity', 
+        time: 'Get started', 
+        type: 'prompt' 
+      });
     }
     
     return activities;
@@ -276,23 +301,39 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const personalityType = userProfile?.personalityType || personalityData?.personalityType || 'Leader';
   const strengthsProgress = getStrengthsFromAI();
 
-  // Generate upcoming deadlines based on user activity
+  // Generate upcoming deadlines based on actual user data
   const getUpcomingDeadlines = () => {
     const deadlines = [];
     
-    // Generate deadlines based on user data
+    // Only show real deadlines based on actual user activity
+    const stats = userStats as any;
     
-    // Regular logic for other users
-    if (userProfile?.activeGoals > 2) {
-      deadlines.push({ title: 'Science Fair Project', date: '2024-03-15', type: 'project', priority: 'high' });
+    if (stats?.completedAssessments > 0 && !personalityData?.personalityType) {
+      deadlines.push({ 
+        title: 'Complete Personality Analysis', 
+        date: 'Pending', 
+        type: 'assessment', 
+        priority: 'medium' 
+      });
     }
     
-    if (userProfile?.completedAssessments > 2) {
-      deadlines.push({ title: 'Leadership Workshop Application', date: '2024-04-01', type: 'opportunity', priority: 'medium' });
+    if (stats?.completedAssessments >= 3 && personalityData?.personalityType) {
+      deadlines.push({ 
+        title: 'Explore recommended opportunities', 
+        date: 'Available now', 
+        type: 'opportunity', 
+        priority: 'low' 
+      });
     }
     
-    if (userProfile?.teamProjects > 0) {
-      deadlines.push({ title: 'Team Meeting - Drama Club', date: '2024-02-25', type: 'meeting', priority: 'low' });
+    // Show message if no real deadlines
+    if (deadlines.length === 0) {
+      deadlines.push({ 
+        title: 'No upcoming deadlines', 
+        date: 'Complete goals and join teams for deadlines', 
+        type: 'info', 
+        priority: 'low' 
+      });
     }
     
     return deadlines;
