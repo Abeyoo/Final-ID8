@@ -282,7 +282,7 @@ Personality Type Definitions:
     confidence: number;
     reasoning: string;
   } {
-    // Simple rule-based fallback analysis
+    // Enhanced behavioral pattern analysis
     const scores: PersonalityScores = {
       Leader: 0.125,
       Innovator: 0.125,
@@ -294,7 +294,36 @@ Personality Type Definitions:
       Anchor: 0.125
     };
 
-    // Adjust based on goal completion rate
+    // Analyze assessment responses for personality indicators
+    behaviorData.assessmentResponses.forEach(response => {
+      const responseText = response.response.toLowerCase();
+      if (responseText.includes('take_charge') || responseText.includes('lead')) {
+        scores.Leader += 0.08;
+      }
+      if (responseText.includes('creative') || responseText.includes('innovative')) {
+        scores.Innovator += 0.08;
+      }
+      if (responseText.includes('team') || responseText.includes('collaborate')) {
+        scores.Collaborator += 0.08;
+      }
+      if (responseText.includes('detail') || responseText.includes('quality')) {
+        scores.Perfectionist += 0.08;
+      }
+      if (responseText.includes('explore') || responseText.includes('research')) {
+        scores.Explorer += 0.08;
+      }
+      if (responseText.includes('mediate') || responseText.includes('resolve')) {
+        scores.Mediator += 0.08;
+      }
+      if (responseText.includes('plan') || responseText.includes('strategy')) {
+        scores.Strategist += 0.08;
+      }
+      if (responseText.includes('support') || responseText.includes('stable')) {
+        scores.Anchor += 0.08;
+      }
+    });
+
+    // Adjust based on goal completion rate and patterns
     const completedGoals = behaviorData.goals.filter(g => g.completed).length;
     const totalGoals = behaviorData.goals.length;
     
@@ -302,10 +331,14 @@ Personality Type Definitions:
       const completionRate = completedGoals / totalGoals;
       if (completionRate > 0.8) {
         scores.Perfectionist += 0.2;
-        scores.Leader += 0.1;
+        scores.Leader += 0.15;
+        scores.Anchor += 0.1;
+      } else if (completionRate > 0.5) {
+        scores.Strategist += 0.15;
+        scores.Perfectionist += 0.1;
       } else if (completionRate < 0.3) {
         scores.Explorer += 0.2;
-        scores.Innovator += 0.1;
+        scores.Innovator += 0.15;
       }
     }
 
