@@ -1012,6 +1012,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assessment questions endpoint
+  app.get("/api/assessments", async (req, res) => {
+    const assessmentQuestions = [
+      {
+        id: 1,
+        question: "When working on a group project, you prefer to:",
+        options: [
+          { value: "leader", text: "Take charge and organize the team's efforts" },
+          { value: "innovator", text: "Generate creative ideas and new approaches" },
+          { value: "collaborator", text: "Make sure everyone's voice is heard" },
+          { value: "perfectionist", text: "Focus on getting all details exactly right" },
+          { value: "explorer", text: "Research thoroughly before making decisions" },
+          { value: "mediator", text: "Help resolve any conflicts that arise" },
+          { value: "strategist", text: "Analyze the situation and plan the best approach" },
+          { value: "anchor", text: "Provide steady support and keep everyone calm" }
+        ]
+      },
+      {
+        id: 2,
+        question: "Your ideal learning environment is:",
+        options: [
+          { value: "leader", text: "Leading study groups and teaching others" },
+          { value: "innovator", text: "Experimenting with new learning methods" },
+          { value: "collaborator", text: "Working closely with classmates" },
+          { value: "perfectionist", text: "Quiet space where you can focus completely" },
+          { value: "explorer", text: "Hands-on experiences and field trips" },
+          { value: "mediator", text: "Discussion-based learning with diverse perspectives" },
+          { value: "strategist", text: "Structured courses with clear learning objectives" },
+          { value: "anchor", text: "Consistent routine with reliable resources" }
+        ]
+      },
+      {
+        id: 3,
+        question: "When facing a challenging problem, you typically:",
+        options: [
+          { value: "leader", text: "Rally others to tackle it together" },
+          { value: "innovator", text: "Think of unconventional solutions" },
+          { value: "collaborator", text: "Seek input from multiple people" },
+          { value: "perfectionist", text: "Break it down into manageable steps" },
+          { value: "explorer", text: "Research similar problems and solutions" },
+          { value: "mediator", text: "Find common ground among different approaches" },
+          { value: "strategist", text: "Analyze patterns and develop a systematic plan" },
+          { value: "anchor", text: "Stay calm and work through it methodically" }
+        ]
+      },
+      {
+        id: 4,
+        question: "In your free time, you're most likely to:",
+        options: [
+          { value: "leader", text: "Organize events or activities for friends" },
+          { value: "innovator", text: "Try new hobbies or create something original" },
+          { value: "collaborator", text: "Spend quality time with friends and family" },
+          { value: "perfectionist", text: "Practice skills until you master them" },
+          { value: "explorer", text: "Visit new places or learn about different cultures" },
+          { value: "mediator", text: "Help friends work through their problems" },
+          { value: "strategist", text: "Plan future goals and organize your life" },
+          { value: "anchor", text: "Relax and provide support to those who need it" }
+        ]
+      },
+      {
+        id: 5,
+        question: "Your friends would describe you as:",
+        options: [
+          { value: "leader", text: "The natural leader who gets things done" },
+          { value: "innovator", text: "The creative one with unique ideas" },
+          { value: "collaborator", text: "The team player who brings people together" },
+          { value: "perfectionist", text: "The reliable one who pays attention to details" },
+          { value: "explorer", text: "The curious one who loves learning new things" },
+          { value: "mediator", text: "The peaceful one who helps everyone get along" },
+          { value: "strategist", text: "The smart one who thinks ahead" },
+          { value: "anchor", text: "The dependable one who's always there for others" }
+        ]
+      },
+      {
+        id: 6,
+        question: "When starting a new project, you first:",
+        options: [
+          { value: "leader", text: "Define clear goals and delegate tasks" },
+          { value: "innovator", text: "Brainstorm creative possibilities" },
+          { value: "collaborator", text: "Gather your team and discuss ideas" },
+          { value: "perfectionist", text: "Plan every detail before beginning" },
+          { value: "explorer", text: "Research what others have done before" },
+          { value: "mediator", text: "Ensure everyone agrees on the approach" },
+          { value: "strategist", text: "Analyze requirements and create a timeline" },
+          { value: "anchor", text: "Establish a solid foundation and stable workflow" }
+        ]
+      },
+      {
+        id: 7,
+        question: "Under pressure, you tend to:",
+        options: [
+          { value: "leader", text: "Step up and take control of the situation" },
+          { value: "innovator", text: "Find creative ways to work around obstacles" },
+          { value: "collaborator", text: "Bring people together to share the load" },
+          { value: "perfectionist", text: "Focus intensely on getting everything right" },
+          { value: "explorer", text: "Seek new information to understand the situation" },
+          { value: "mediator", text: "Keep everyone calm and focused" },
+          { value: "strategist", text: "Analyze the situation and prioritize actions" },
+          { value: "anchor", text: "Remain steady and provide stability for others" }
+        ]
+      },
+      {
+        id: 8,
+        question: "Your communication style is best described as:",
+        options: [
+          { value: "leader", text: "Direct and decisive" },
+          { value: "innovator", text: "Creative and inspiring" },
+          { value: "collaborator", text: "Inclusive and encouraging" },
+          { value: "perfectionist", text: "Precise and detailed" },
+          { value: "explorer", text: "Curious and questioning" },
+          { value: "mediator", text: "Diplomatic and understanding" },
+          { value: "strategist", text: "Analytical and forward-thinking" },
+          { value: "anchor", text: "Calm and reassuring" }
+        ]
+      },
+      {
+        id: 9,
+        question: "When making decisions, you primarily consider:",
+        options: [
+          { value: "leader", text: "What will achieve the best results quickly" },
+          { value: "innovator", text: "What new possibilities this might open up" },
+          { value: "collaborator", text: "How it will affect everyone involved" },
+          { value: "perfectionist", text: "What the most thorough and correct approach is" },
+          { value: "explorer", text: "What you might learn from different options" },
+          { value: "mediator", text: "What solution everyone can agree on" },
+          { value: "strategist", text: "What the long-term implications are" },
+          { value: "anchor", text: "What provides the most stability and security" }
+        ]
+      },
+      {
+        id: 10,
+        question: "Your greatest strength in a team setting is:",
+        options: [
+          { value: "leader", text: "Motivating others and driving progress" },
+          { value: "innovator", text: "Bringing fresh perspectives and ideas" },
+          { value: "collaborator", text: "Building strong relationships and unity" },
+          { value: "perfectionist", text: "Ensuring quality and attention to detail" },
+          { value: "explorer", text: "Gathering information and learning opportunities" },
+          { value: "mediator", text: "Resolving conflicts and finding compromise" },
+          { value: "strategist", text: "Planning ahead and anticipating challenges" },
+          { value: "anchor", text: "Providing consistent support and reliability" }
+        ]
+      }
+    ];
+
+    res.json(assessmentQuestions);
+  });
+
   // AI-powered opportunity recommendations
   app.get("/api/opportunities/recommendations/:userId", async (req, res) => {
     try {

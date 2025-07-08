@@ -22,6 +22,8 @@ interface PersonalityScores {
   Perfectionist: number;
   Explorer: number;
   Mediator: number;
+  Strategist: number;
+  Anchor: number;
 }
 
 interface BehaviorData {
@@ -143,7 +145,9 @@ export class PersonalityAnalysisService {
                 "Collaborator": 0.10,
                 "Perfectionist": 0.20,
                 "Explorer": 0.30,
-                "Mediator": 0.00
+                "Mediator": 0.00,
+                "Strategist": 0.00,
+                "Anchor": 0.00
               },
               "primaryPersonality": "Explorer",
               "confidence": 0.85,
@@ -252,10 +256,20 @@ export class PersonalityAnalysisService {
     }
 
     prompt += `Based on this data, determine:
-1. The most fitting personality type from the 6 categories
+1. The most fitting personality type from the 8 categories: Leader, Innovator, Collaborator, Perfectionist, Explorer, Mediator, Strategist, Anchor
 2. Confidence scores for each personality type (must sum to 1.0)
 3. Overall confidence in the analysis (0-1)
-4. Detailed reasoning explaining the personality assessment`;
+4. Detailed reasoning explaining the personality assessment
+
+Personality Type Definitions:
+- Leader: Guides others and drives decisions
+- Innovator: Generates original ideas and disrupts the norm
+- Collaborator: Builds relationships and unites teams
+- Perfectionist: Strives for excellence and precision
+- Explorer: Craves new experiences and growth
+- Mediator: Resolves tensions and promotes understanding
+- Strategist: Analyzes patterns and plans with foresight
+- Anchor: Offers reliability, support, and calm under pressure`;
 
     return prompt;
   }
@@ -268,12 +282,14 @@ export class PersonalityAnalysisService {
   } {
     // Simple rule-based fallback analysis
     const scores: PersonalityScores = {
-      Leader: 0.16,
-      Innovator: 0.16,
-      Collaborator: 0.17,
-      Perfectionist: 0.17,
-      Explorer: 0.17,
-      Mediator: 0.17
+      Leader: 0.125,
+      Innovator: 0.125,
+      Collaborator: 0.125,
+      Perfectionist: 0.125,
+      Explorer: 0.125,
+      Mediator: 0.125,
+      Strategist: 0.125,
+      Anchor: 0.125
     };
 
     // Adjust based on goal completion rate
@@ -366,7 +382,9 @@ export class PersonalityAnalysisService {
       Collaborator: [],
       Perfectionist: [],
       Explorer: [],
-      Mediator: []
+      Mediator: [],
+      Strategist: [],
+      Anchor: []
     };
 
     // Collect all scores for each personality type
