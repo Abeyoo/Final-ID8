@@ -748,7 +748,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.params.userId;
       
       // Ensure user can only access their own data
-      if (userId !== req.user.claims.sub) {
+      const userIdentifier = req.user.claims?.sub || req.user.id;
+      if (userId !== userIdentifier) {
         return res.status(403).json({ error: 'Access denied' });
       }
       
