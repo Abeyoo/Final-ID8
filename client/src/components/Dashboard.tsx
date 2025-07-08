@@ -345,23 +345,16 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
           <div className="bg-white bg-opacity-20 rounded-lg p-4">
             <h3 className="font-bold text-lg mb-2">{personalityInsight.type}</h3>
             <p className="text-sm opacity-90 mb-3">{personalityInsight.description}</p>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <h4 className="font-semibold mb-1">Strengths:</h4>
-                <ul className="space-y-1 opacity-80">
-                  {personalityInsight.strengths?.map((strength, i) => (
-                    <li key={i}>• {strength}</li>
-                  )) || []}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Growth Areas:</h4>
-                <ul className="space-y-1 opacity-80">
-                  {personalityInsight.growthAreas?.map((area, i) => (
-                    <li key={i}>• {area}</li>
-                  )) || []}
-                </ul>
-              </div>
+            <div className="text-xs">
+              <h4 className="font-semibold mb-2">Growth Areas:</h4>
+              <ul className="space-y-1 opacity-80">
+                {personalityInsight.growthAreas?.map((area, i) => (
+                  <li key={i}>• {area}</li>
+                )) || []}
+              </ul>
+              <p className="mt-3 opacity-80 italic">
+                Your detailed strengths are analyzed in the "Strength Analysis" section →
+              </p>
             </div>
           </div>
         </div>
@@ -369,7 +362,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
         {/* Enhanced Top Strengths */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Your Top Strengths</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Strength Analysis</h2>
             <Zap size={20} className="text-yellow-500" />
           </div>
           <div className="space-y-5">
