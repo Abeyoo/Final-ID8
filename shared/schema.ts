@@ -148,9 +148,29 @@ export const personalityAnalysis = pgTable("personality_analysis", {
   previousPersonality: text("previous_personality"),
   updatedPersonality: text("updated_personality"),
   reasoning: text("reasoning"), // AI explanation for personality update
-  percentileChanges: jsonb("percentile_changes"), // Before/after percentiles
-  opportunityPatterns: jsonb("opportunity_patterns"), // Analyzed opportunity preferences
-  createdAt: timestamp("created_at").defaultNow(),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Track AI chat interactions for personality analysis
+export const aiChatInteractions = pgTable("ai_chat_interactions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  message: text("message").notNull(),
+  response: text("response").notNull(),
+  extractedInterests: text("extracted_interests").array(), // Interests detected from conversation
+  personalityIndicators: jsonb("personality_indicators"), // Personality traits shown in conversation
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Track dynamic interest evolution
+export const interestEvolution = pgTable("interest_evolution", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  previousInterests: text("previous_interests").array(),
+  updatedInterests: text("updated_interests").array(),
+  changeReason: text("change_reason").notNull(), // 'goal_creation', 'opportunity_application', 'ai_chat', 'assessment'
+  confidence: real("confidence").default(0.8), // Confidence in the interest change
+  timestamp: timestamp("timestamp").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -227,7 +247,17 @@ export const insertPersonalityPercentileSchema = createInsertSchema(personalityP
 
 export const insertPersonalityAnalysisSchema = createInsertSchema(personalityAnalysis).omit({
   id: true,
-  createdAt: true,
+  timestamp: true,
+});
+
+export const insertAiChatInteractionSchema = createInsertSchema(aiChatInteractions).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertInterestEvolutionSchema = createInsertSchema(interestEvolution).omit({
+  id: true,
+  timestamp: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -244,3 +274,5 @@ export type ProjectTask = typeof projectTasks.$inferSelect;
 export type Opportunity = typeof opportunities.$inferSelect;
 export type PersonalityPercentile = typeof personalityPercentiles.$inferSelect;
 export type PersonalityAnalysis = typeof personalityAnalysis.$inferSelect;
+export type AiChatInteraction = typeof aiChatInteractions.$inferSelect;
+export type InterestEvolution = typeof interestEvolution.$inferSelect;

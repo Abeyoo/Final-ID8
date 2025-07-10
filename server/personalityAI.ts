@@ -8,7 +8,9 @@ import {
   teamInteractions, 
   personalityAnalysis,
   opportunities,
-  personalityPercentiles
+  personalityPercentiles,
+  aiChatInteractions,
+  interestEvolution
 } from "@shared/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 
@@ -32,7 +34,9 @@ interface BehaviorData {
   achievements: any[];
   teamInteractions: any[];
   opportunities: any[];
+  aiChatInteractions: any[];
   currentPersonality: string | null;
+  currentInterests: string[];
 }
 
 export class PersonalityAnalysisService {
@@ -55,6 +59,294 @@ export class PersonalityAnalysisService {
     return analysis;
   }
 
+  private async gatherBehaviorData(userId: string): Promise<BehaviorData> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Get current user data
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    
+    // Get recent assessment responses
+    const assessmentData = await db
+      .select()
+      .from(assessmentResponses)
+      .where(and(
+        eq(assessmentResponses.userId, userId),
+        gte(assessmentResponses.timestamp, thirtyDaysAgo)
+      ));
+
+    // Get goals data (created, completed patterns)
+    const goalsData = await db
+      .select()
+      .from(goals)
+      .where(eq(goals.userId, userId));
+
+    // Get achievements
+    const achievementsData = await db
+      .select()
+      .from(achievements)
+      .where(and(
+        eq(achievements.userId, userId),
+        gte(achievements.earnedAt, thirtyDaysAgo)
+      ));
+
+    // Get team interactions
+    const teamData = await db
+      .select()
+      .from(teamInteractions)
+      .where(and(
+        eq(teamInteractions.userId, userId),
+        gte(teamInteractions.timestamp, thirtyDaysAgo)
+      ));
+
+    // Get opportunity interactions
+    const opportunityData = await db
+      .select()
+      .from(opportunities)
+      .where(and(
+        eq(opportunities.userId, userId),
+        gte(opportunities.timestamp, thirtyDaysAgo)
+      ));
+
+    // Get AI chat interactions
+    const aiChatData = await db
+      .select()
+      .from(aiChatInteractions)
+      .where(and(
+        eq(aiChatInteractions.userId, userId),
+        gte(aiChatInteractions.timestamp, thirtyDaysAgo)
+      ));
+
+    return {
+      assessmentResponses: assessmentData,
+      goals: goalsData,
+      achievements: achievementsData,
+      teamInteractions: teamData,
+      opportunities: opportunityData,
+      aiChatInteractions: aiChatData,
+      currentPersonality: user?.personalityType || null,
+      currentInterests: user?.initialInterests || []
+    };
+  }
+
+  // New method: Track AI chat interaction and extract insights
+  async trackAiChatInteraction(userId: string, message: string, response: string): Promise<void> {
+    // Use AI to extract interests and personality indicators from the conversation
+    const insights = await this.extractChatInsights(message, response);
+    
+    // Store the interaction with insights
+    await db.insert(aiChatInteractions).values({
+      userId,
+      message,
+      response,
+      extractedInterests: insights.interests,
+      personalityIndicators: insights.personalityIndicators
+    });
+
+    // Check if we should update user's interests based on this interaction
+    if (insights.interests.length > 0) {
+      await this.updateUserInterests(userId, insights.interests, 'ai_chat');
+    }
+
+    // Trigger personality analysis if significant personality indicators detected
+    if (insights.personalityIndicators && Object.keys(insights.personalityIndicators).length > 0) {
+      await this.analyzeUserPersonality(userId);
+    }
+  }
+
+  // Extract interests and personality indicators from chat conversation
+  private async extractChatInsights(message: string, response: string): Promise<{
+    interests: string[];
+    personalityIndicators: Record<string, number>;
+  }> {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `You are an AI that analyzes conversations to extract interests and personality indicators. 
+            
+            Interest categories: Science, Technology, Arts, Leadership, Sports, Community, Business, Environment, Social Sciences
+            
+            Personality types: Leader, Innovator, Collaborator, Perfectionist, Explorer, Mediator, Strategist, Anchor
+            
+            Analyze the conversation and return a JSON object with:
+            - interests: array of interest categories mentioned or implied
+            - personalityIndicators: object with personality types as keys and confidence scores (0-1) as values
+            
+            Only include interests and personality indicators that are clearly evident from the conversation.`
+          },
+          {
+            role: "user",
+            content: `Student message: "${message}"\nAI response: "${response}"`
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const result = JSON.parse(completion.choices[0].message.content || '{}');
+      return {
+        interests: result.interests || [],
+        personalityIndicators: result.personalityIndicators || {}
+      };
+    } catch (error) {
+      console.error('Error extracting chat insights:', error);
+      return { interests: [], personalityIndicators: {} };
+    }
+  }
+
+  // Update user interests based on new evidence
+  private async updateUserInterests(userId: string, newInterests: string[], reason: string): Promise<void> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return;
+
+    const currentInterests = user.initialInterests || [];
+    
+    // Add new interests that aren't already present
+    const updatedInterests = [...new Set([...currentInterests, ...newInterests])];
+    
+    // Only update if there are actual changes
+    if (updatedInterests.length > currentInterests.length) {
+      // Record the interest evolution
+      await db.insert(interestEvolution).values({
+        userId,
+        previousInterests: currentInterests,
+        updatedInterests,
+        changeReason: reason,
+        confidence: 0.7 // Moderate confidence for AI-detected interests
+      });
+
+      // Update user's interests
+      await db.update(users)
+        .set({ initialInterests: updatedInterests })
+        .where(eq(users.id, userId));
+    }
+  }
+
+  // Enhanced goal tracking with interest detection
+  async trackGoalCreation(userId: string, goalData: any): Promise<void> {
+    // Extract interests from goal category and description
+    const goalInterests = this.extractInterestsFromGoal(goalData);
+    
+    if (goalInterests.length > 0) {
+      await this.updateUserInterests(userId, goalInterests, 'goal_creation');
+    }
+
+    // Trigger personality analysis as goals reflect personality
+    await this.analyzeUserPersonality(userId);
+  }
+
+  // Extract interests from goal data
+  private extractInterestsFromGoal(goalData: any): string[] {
+    const interests: string[] = [];
+    const categoryMapping: Record<string, string> = {
+      'academic': 'Science',
+      'technology': 'Technology',
+      'creative': 'Arts',
+      'leadership': 'Leadership',
+      'fitness': 'Sports',
+      'community': 'Community',
+      'business': 'Business',
+      'environmental': 'Environment',
+      'social': 'Social Sciences'
+    };
+
+    // Map goal category to interest
+    if (goalData.category && categoryMapping[goalData.category.toLowerCase()]) {
+      interests.push(categoryMapping[goalData.category.toLowerCase()]);
+    }
+
+    // Analyze goal description for additional interests
+    const description = (goalData.description || '').toLowerCase();
+    if (description.includes('science') || description.includes('research')) interests.push('Science');
+    if (description.includes('technology') || description.includes('coding')) interests.push('Technology');
+    if (description.includes('art') || description.includes('creative')) interests.push('Arts');
+    if (description.includes('lead') || description.includes('organize')) interests.push('Leadership');
+    if (description.includes('sport') || description.includes('fitness')) interests.push('Sports');
+    if (description.includes('volunteer') || description.includes('community')) interests.push('Community');
+    if (description.includes('business') || description.includes('entrepreneur')) interests.push('Business');
+    if (description.includes('environment') || description.includes('climate')) interests.push('Environment');
+    if (description.includes('psychology') || description.includes('social')) interests.push('Social Sciences');
+
+    return [...new Set(interests)];
+  }
+
+  // Enhanced opportunity tracking with interest learning
+  async trackOpportunityInteraction(
+    userId: string,
+    opportunityData: any,
+    actionType: string
+  ): Promise<void> {
+    // Store the interaction
+    await db.insert(opportunities).values({
+      userId,
+      opportunityType: opportunityData.type,
+      category: opportunityData.category,
+      title: opportunityData.title,
+      description: opportunityData.description,
+      actionType,
+      interactionData: { ...opportunityData, actionType }
+    });
+
+    // If user applied to opportunity, strongly indicate interest in that category
+    if (actionType === 'applied') {
+      await this.updateUserInterests(userId, [opportunityData.category], 'opportunity_application');
+      
+      // Trigger personality analysis for applications (shows commitment and interests)
+      await this.analyzeUserPersonality(userId);
+    }
+  }
+
+  // Enhanced assessment tracking
+  async trackAssessmentResponse(userId: string, assessmentType: string, questionId: string, response: string): Promise<void> {
+    // Store the assessment response
+    await db.insert(assessmentResponses).values({
+      userId,
+      assessmentType,
+      questionId,
+      response
+    });
+
+    // Extract interests from assessment responses
+    const interests = this.extractInterestsFromAssessment(assessmentType, questionId, response);
+    if (interests.length > 0) {
+      await this.updateUserInterests(userId, interests, 'assessment');
+    }
+
+    // Trigger personality analysis after assessment completion
+    await this.analyzeUserPersonality(userId);
+  }
+
+  // Extract interests from assessment responses
+  private extractInterestsFromAssessment(assessmentType: string, questionId: string, response: string): string[] {
+    const interests: string[] = [];
+    const responseLower = response.toLowerCase();
+
+    // Map common assessment responses to interests
+    const interestKeywords = {
+      'Science': ['science', 'research', 'experiment', 'lab', 'biology', 'chemistry', 'physics'],
+      'Technology': ['technology', 'coding', 'programming', 'computer', 'software', 'engineering'],
+      'Arts': ['art', 'creative', 'design', 'music', 'writing', 'drawing', 'painting'],
+      'Leadership': ['lead', 'organize', 'manage', 'coordinate', 'direct', 'influence'],
+      'Sports': ['sport', 'athletic', 'fitness', 'exercise', 'team', 'competition'],
+      'Community': ['volunteer', 'help', 'community', 'service', 'social impact', 'charity'],
+      'Business': ['business', 'entrepreneur', 'finance', 'marketing', 'sales', 'startup'],
+      'Environment': ['environment', 'nature', 'climate', 'sustainability', 'conservation'],
+      'Social Sciences': ['psychology', 'sociology', 'history', 'politics', 'culture', 'society']
+    };
+
+    // Check for keyword matches
+    Object.entries(interestKeywords).forEach(([interest, keywords]) => {
+      if (keywords.some(keyword => responseLower.includes(keyword))) {
+        interests.push(interest);
+      }
+    });
+
+    return interests;
+  }
+
+  // Get updated behavior data that includes AI chat interactions
   private async gatherBehaviorData(userId: string): Promise<BehaviorData> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

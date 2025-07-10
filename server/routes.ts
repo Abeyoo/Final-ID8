@@ -763,6 +763,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Chat endpoint
+  app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
+    try {
+      const { message, userProfile } = req.body;
+      const userId = req.user.id;
+
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Generate AI response using OpenAI
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `You are a helpful AI assistant for a student development platform called Thinkle. 
+            
+            You help students with:
+            - Goal setting and personal development
+            - Strength analysis and personality insights
+            - Team collaboration and finding teammates
+            - Opportunity discovery and career guidance
+            - Study strategies and skill development
+            
+            The user's profile:
+            - Name: ${userProfile?.name || 'Student'}
+            - Personality Type: ${userProfile?.personalityType || 'Not determined'}
+            - Interests: ${userProfile?.interests?.join(', ') || 'Not specified'}
+            
+            Always provide helpful, personalized advice. Be encouraging and specific. 
+            Include actionable suggestions when possible.
+            
+            Format your response as a JSON object with:
+            - response: Your main response text
+            - suggestions: Array of 3-4 follow-up questions/prompts the user might be interested in`
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.7
+      });
+
+      const aiResponse = JSON.parse(completion.choices[0].message.content || '{}');
+      
+      // Track this interaction for continuous learning
+      await personalityAI.trackAiChatInteraction(userId, message, aiResponse.response);
+
+      res.json(aiResponse);
+    } catch (error) {
+      console.error('AI Chat Error:', error);
+      res.status(500).json({ 
+        error: 'AI service temporarily unavailable',
+        response: 'I apologize, but I\'m having trouble processing your request right now. Please try again in a moment.',
+        suggestions: ['Help me set goals', 'Analyze my strengths', 'Find opportunities', 'Team recommendations']
+      });
+    }
+  });
+
   // Create a new team
   app.post("/api/teams", async (req, res) => {
     try {

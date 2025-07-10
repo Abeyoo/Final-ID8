@@ -59,135 +59,66 @@ const AIChat: React.FC<AIChatProps> = ({ userProfile }) => {
     }
   ];
 
-  const generateAIResponse = (userMessage: string) => {
-    // Simulate AI thinking time
+  const generateAIResponse = async (userMessage: string) => {
+    // Set typing indicator
     setIsTyping(true);
     
-    setTimeout(() => {
-      let response = '';
-      let suggestions = [];
+    try {
+      // Call the AI chat API to get a personalized response
+      const response = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          userProfile: userProfile
+        })
+      });
 
-      const lowerMessage = userMessage.toLowerCase();
-
-      if (lowerMessage.includes('goal') || lowerMessage.includes('objective')) {
-        response = `Based on your profile as a ${userProfile?.personalityType || 'Leader'}, I'd recommend setting goals that leverage your natural strengths. Here's a framework for your next goal:
-
-**SMART Goal Template:**
-- **Specific**: What exactly do you want to achieve?
-- **Measurable**: How will you track progress?
-- **Achievable**: Is this realistic given your current skills?
-- **Relevant**: Does this align with your interests and values?
-- **Time-bound**: When do you want to complete this?
-
-For someone with your leadership qualities, consider goals around:
-• Leading a team project or initiative
-• Developing public speaking skills
-• Mentoring younger students
-• Organizing a community service project
-
-Would you like help crafting a specific goal in any of these areas?`;
-        
-        suggestions = ['Help me create a leadership goal', 'Set a public speaking goal', 'Plan a mentoring initiative'];
-      } else if (lowerMessage.includes('strength') || lowerMessage.includes('skill')) {
-        response = `Great question! Based on your assessment results, here's your strength profile:
-
-**Your Top Strengths:**
-🎯 **Leadership (72%)** - You naturally take charge and inspire others
-💬 **Communication (68%)** - You express ideas clearly and persuasively  
-🧠 **Problem Solving (64%)** - You excel at finding creative solutions
-🎨 **Creativity (61%)** - You think outside the box and generate innovative ideas
-❤️ **Empathy (58%)** - You understand and connect with others well
-
-**Development Opportunities:**
-• **Delegation** - Learning to trust others with important tasks
-• **Active Listening** - Enhancing your ability to truly hear others
-• **Patience** - Developing tolerance for different working styles
-
-Your ${userProfile?.personalityType || 'Leader'} personality type means you thrive when you can guide others toward a common vision. Consider roles where you can mentor, organize, or inspire!
-
-*Note: These percentages are based on AI personality analysis and real assessment data. Complete more assessments to get even more accurate insights!*`;
-        
-        suggestions = ['How can I improve delegation?', 'Find leadership opportunities', 'Develop my communication skills'];
-      } else if (lowerMessage.includes('team') || lowerMessage.includes('collaborate')) {
-        response = `Perfect! Team collaboration is one of your strengths. Here's how to find great teammates:
-
-**Look for Complementary Skills:**
-• **Analysts** - To balance your big-picture thinking with detail orientation
-• **Implementers** - To help execute your creative ideas
-• **Specialists** - To bring deep expertise in specific areas
-
-**Based on Your Profile:**
-As a ${userProfile?.personalityType || 'Leader'}, you work best with:
-• People who appreciate clear direction
-• Detail-oriented team members
-• Those who value innovation and creativity
-
-**Team Finder Tips:**
-1. Use the Team Finder to search by complementary strengths
-2. Look for projects that match your interests: ${userProfile?.interests?.slice(0, 3).join(', ') || 'Science, Technology, Leadership'}
-3. Consider both leading and supporting roles
-
-Would you like me to help you craft a team search strategy?`;
-        
-        suggestions = ['Find me analytical teammates', 'Search for creative collaborators', 'Help me lead a team project'];
-      } else if (lowerMessage.includes('opportunity') || lowerMessage.includes('competition')) {
-        response = `Excellent! Based on your strengths and interests, here are some opportunities that would be perfect for you:
-
-**High-Match Opportunities:**
-🏆 **Leadership Competitions**
-• Youth Leadership Summit (95% match)
-• Student Government Elections
-• Model UN Conferences
-
-🔬 **STEM Challenges** 
-• Science Fair Competitions (90% match)
-• Innovation Challenges
-• Robotics Competitions
-
-🎯 **Community Impact Projects**
-• Social Entrepreneurship Contests
-• Community Service Leadership
-• Environmental Action Initiatives
-
-**Why These Match You:**
-Your combination of leadership skills, creativity, and ${userProfile?.interests?.includes('science') ? 'scientific interest' : 'diverse interests'} makes you ideal for challenges that require both vision and execution.
-
-**Next Steps:**
-1. Check the Opportunities section for application deadlines
-2. Start building a team for group competitions
-3. Begin preparing your application materials
-
-Which type of opportunity interests you most?`;
-        
-        suggestions = ['Show me leadership competitions', 'Find STEM challenges', 'Explore community projects'];
-      } else {
-        response = `I'm here to help you with anything related to your personal development! I can assist with:
-
-• **Goal Setting** - Creating actionable development plans
-• **Strength Analysis** - Understanding your unique talents
-• **Team Building** - Finding compatible collaborators  
-• **Opportunity Discovery** - Matching you with relevant competitions
-• **Career Guidance** - Exploring future pathways
-• **Study Strategies** - Optimizing your learning approach
-
-What specific area would you like to explore? I'm designed to provide personalized advice based on your unique profile and assessment results.`;
-        
-        suggestions = ['Help me set goals', 'Analyze my strengths', 'Find opportunities', 'Career advice'];
+      if (!response.ok) {
+        throw new Error('AI response failed');
       }
 
-      setMessages(prev => [...prev, {
-        id: prev.length + 1,
-        type: 'ai',
-        content: response,
-        timestamp: new Date(),
-        suggestions
-      }]);
+      const data = await response.json();
       
+      // Add AI response to messages
+      const aiMessage = {
+        id: Date.now(),
+        type: 'ai',
+        content: data.response,
+        timestamp: new Date(),
+        suggestions: data.suggestions || []
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1500 + Math.random() * 1000); // Simulate realistic response time
+      
+    } catch (error) {
+      console.error('AI response error:', error);
+      
+      // Fallback response
+      const fallbackResponse = {
+        id: Date.now(),
+        type: 'ai',
+        content: `I apologize, but I'm having trouble processing your request right now. Here are some things I can help you with:
+
+• **Goal Setting**: Help you create SMART goals based on your personality and interests
+• **Strength Analysis**: Analyze your assessment results and personality insights
+• **Team Matching**: Find compatible teammates and collaboration opportunities
+• **Opportunity Discovery**: Suggest competitions and programs that match your profile
+
+What would you like to explore?`,
+        timestamp: new Date(),
+        suggestions: ['Help me set goals', 'Analyze my strengths', 'Find opportunities', 'Team recommendations']
+      };
+
+      setMessages(prev => [...prev, fallbackResponse]);
+      setIsTyping(false);
+    }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const userMessage = {
@@ -198,18 +129,18 @@ What specific area would you like to explore? I'm designed to provide personaliz
     };
 
     setMessages(prev => [...prev, userMessage]);
-    generateAIResponse(inputMessage);
+    await generateAIResponse(inputMessage);
     setInputMessage('');
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = async (suggestion: string) => {
     setInputMessage(suggestion);
-    handleSendMessage();
+    await handleSendMessage();
   };
 
-  const handleQuickAction = (prompt: string) => {
+  const handleQuickAction = async (prompt: string) => {
     setInputMessage(prompt);
-    setTimeout(() => handleSendMessage(), 100);
+    setTimeout(async () => await handleSendMessage(), 100);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
