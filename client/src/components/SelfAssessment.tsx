@@ -514,13 +514,18 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                     ))
                   :
                   [
-                    <li key="1">• Complete quizzes to see your strengths</li>,
-                    <li key="2">• Take personality assessment first</li>,
-                    <li key="3">• Discover your unique traits</li>,
-                    <li key="4">• Build your personal profile</li>
+                    <li key="1">• Leadership Skills</li>,
+                    <li key="2">• Creative Thinking</li>,
+                    <li key="3">• Team Collaboration</li>,
+                    <li key="4">• Problem Solving</li>
                   ]
                 }
               </ul>
+              {!personalityData?.personalityScores && (
+                <div className="text-xs opacity-75 mt-2">
+                  Take quizzes to discover your actual strengths
+                </div>
+              )}
             </div>
             <div className="bg-white bg-opacity-20 rounded-lg p-4">
               <div className="flex items-center mb-2">
@@ -560,13 +565,18 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                   ))
                   :
                   [
-                    <li key="1">• Complete your profile setup</li>,
-                    <li key="2">• Add your interests during signup</li>,
-                    <li key="3">• Set goals to discover values</li>,
-                    <li key="4">• Take assessments to learn more</li>
+                    <li key="1">• Making a Difference</li>,
+                    <li key="2">• Collaboration</li>,
+                    <li key="3">• Innovation</li>,
+                    <li key="4">• Personal Growth</li>
                   ]
                 }
               </ul>
+              {(!userProfile?.initialInterests || userProfile.initialInterests.length === 0) && (
+                <div className="text-xs opacity-75 mt-2">
+                  Add interests during signup to personalize
+                </div>
+              )}
             </div>
           </div>
         </div>
