@@ -716,11 +716,14 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
             <div className="grid grid-cols-2 gap-3">
               {[
                 { name: 'Science & Research', level: 'High' },
-                { name: 'Leadership & Management', level: 'Very High' },
+                { name: 'Technology & Programming', level: 'Medium' },
                 { name: 'Arts & Creativity', level: 'High' },
-                { name: 'Technology', level: 'Medium' },
-                { name: 'Social Impact', level: 'Very High' },
-                { name: 'Public Speaking', level: 'High' }
+                { name: 'Leadership & Management', level: 'Very High' },
+                { name: 'Sports & Athletics', level: 'Medium' },
+                { name: 'Community Service', level: 'Very High' },
+                { name: 'Business & Finance', level: 'Medium' },
+                { name: 'Environment & Sustainability', level: 'High' },
+                { name: 'Social Sciences', level: 'High' }
               ].map((interest, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-3">
                   <h4 className="text-sm font-medium text-gray-900">{interest.name}</h4>
