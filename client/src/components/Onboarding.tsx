@@ -46,7 +46,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
     { id: 'Sports', label: 'Sports & Athletics', icon: Target },
     { id: 'Community', label: 'Community Service', icon: Lightbulb },
     { id: 'Business', label: 'Business & Finance', icon: Shield },
-    { id: 'Environment', label: 'Environment & Sustainability', icon: Shield }
+    { id: 'Environment', label: 'Environment & Sustainability', icon: Shield },
+    { id: 'Social Sciences', label: 'Social Sciences', icon: Brain }
   ];
 
   const personalityQuestions = [

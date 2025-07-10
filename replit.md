@@ -125,7 +125,7 @@ A comprehensive student development platform that helps students with career ass
     - Made button text more approachable ("Start Quiz" vs "Start Assessment", "View Results" vs "Review Results")
     - Changed empty state to "Ready to Discover Yourself?" with encouraging, discovery-focused language
   - **Interest Categories Standardization**: Unified all interest categories across the platform for consistent cross-referencing
-    - Standardized to 8 consistent categories: Science, Technology, Arts, Leadership, Sports, Community, Business, Environment
+    - Standardized to 9 consistent categories: Science, Technology, Arts, Leadership, Sports, Community, Business, Environment, Social Sciences
     - Updated SignUp.tsx, Onboarding.tsx, and TeamFinder.tsx to use identical interest classification
     - Enhanced opportunity matching and team finding with consistent category matching
     - Improved data integrity and user experience across all platform features

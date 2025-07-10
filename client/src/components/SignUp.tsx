@@ -30,7 +30,8 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
     { id: 'Sports', name: 'Sports & Athletics', icon: '⚽', description: 'Team sports, fitness, competition' },
     { id: 'Community', name: 'Community Service', icon: '🤝', description: 'Volunteering, social impact' },
     { id: 'Business', name: 'Business & Finance', icon: '💼', description: 'Entrepreneurship, economics' },
-    { id: 'Environment', name: 'Environment & Sustainability', icon: '🌍', description: 'Climate, conservation, green tech' }
+    { id: 'Environment', name: 'Environment & Sustainability', icon: '🌍', description: 'Climate, conservation, green tech' },
+    { id: 'Social Sciences', name: 'Social Sciences', icon: '📚', description: 'Psychology, sociology, history, political science' }
   ];
 
   // Personality assessment questions
