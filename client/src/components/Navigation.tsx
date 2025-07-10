@@ -28,7 +28,7 @@ interface NavigationProps {
 
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'assessment', label: 'Self Assessment', icon: Brain },
+  { id: 'assessment', label: 'Know Yourself', icon: Brain },
   { id: 'development', label: 'Goals', icon: Target },
   { id: 'team-finder', label: 'Team Finder', icon: Search },
   { id: 'team', label: 'Team Collaboration', icon: Users },

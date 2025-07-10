@@ -372,7 +372,7 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                 onClick={() => setActiveAssessment(null)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
-                Back to Assessments
+                Back to Quizzes
               </button>
             </div>
             
@@ -431,8 +431,8 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
     <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Self Assessment</h1>
-        <p className="text-gray-600">Discover your strengths, personality traits, and interests through comprehensive assessments.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Know Yourself</h1>
+        <p className="text-gray-600">Discover your strengths, personality traits, and interests through fun, interactive quizzes.</p>
       </div>
 
       {/* Assessment Categories */}
@@ -476,7 +476,7 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                 }`}
               >
                 <Play size={16} className="mr-2" />
-                {assessment.completed ? 'Review Results' : 'Start Assessment'}
+                {assessment.completed ? 'View Results' : 'Start Quiz'}
               </button>
             </div>
           );
@@ -486,7 +486,7 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
       {/* Results Dashboard - Only show if assessments completed */}
       {assessments.some(a => a.completed) && (
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white mb-8">
-          <h2 className="text-xl font-semibold mb-4">Your Assessment Results</h2>
+          <h2 className="text-xl font-semibold mb-4">Your Personal Profile</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white bg-opacity-20 rounded-lg p-4">
               <div className="flex items-center mb-2">
@@ -564,12 +564,12 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
       {!assessments.some(a => a.completed) && (
         <div className="bg-gray-50 rounded-xl p-8 text-center">
           <Brain size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assessment Results Yet</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Discover Yourself?</h3>
           <p className="text-gray-600 mb-4">
-            Complete your first assessment to see your personalized results, strengths, and insights.
+            Take your first quiz to uncover your unique strengths, personality traits, and interests.
           </p>
           <div className="text-sm text-gray-500">
-            Start with any assessment above to begin discovering your unique profile.
+            Choose any quiz above to start your journey of self-discovery.
           </div>
         </div>
       )}

@@ -119,6 +119,11 @@ A comprehensive student development platform that helps students with career ass
   - Enhanced category matching with bidirectional string matching for better accuracy
   - Fixed frontend to use authenticated user's real ID instead of hardcoded values
   - System now properly accounts for user's original interests along with behavioral data
+  - **UI Accessibility Improvements**: Updated "Self Assessment" to "Know Yourself" for more welcoming, accessible language
+    - Changed navigation label from "Self Assessment" to "Know Yourself" 
+    - Updated page header and descriptions to use "quizzes" instead of "assessments"
+    - Made button text more approachable ("Start Quiz" vs "Start Assessment", "View Results" vs "Review Results")
+    - Changed empty state to "Ready to Discover Yourself?" with encouraging, discovery-focused language
 
 ## Development Notes
 - Uses mock authentication with predefined user accounts for testing
