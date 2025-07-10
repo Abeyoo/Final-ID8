@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Play, CheckCircle, BarChart3, Lightbulb, Star, Target, Users, Zap } from 'lucide-react';
+import { Brain, Play, CheckCircle, BarChart3, Lightbulb, Star, Target, Users, Zap, MessageCircle, Send } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 
@@ -140,6 +140,10 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
   const [activeAssessment, setActiveAssessment] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'bot' | 'user', message: string}>>([]);
+  const [currentInput, setCurrentInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
   // Fetch user's personality data for the profile section
   const { data: personalityData } = useQuery({
@@ -226,6 +230,56 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
     ...template,
     completed: completionStatus ? (completionStatus as any)[template.id] || false : false
   }));
+
+  // Chatbot conversation logic
+  const chatbotQuestions = [
+    "Hi! I'm here to help you discover more about yourself. What activities make you feel most energized and excited?",
+    "That's interesting! When you imagine your ideal day, what would you be doing?",
+    "What subjects or topics do you find yourself naturally curious about?",
+    "Tell me about a time when you felt really proud of something you accomplished.",
+    "If you could solve any problem in the world, what would it be?",
+    "What kind of environment helps you do your best work - quiet and focused, or collaborative and energetic?",
+    "What skills do you most want to develop over the next year?",
+    "Thanks for sharing! Based on our conversation, I can see you have some really interesting passions and strengths. Have you considered taking the personality assessment to get even deeper insights?"
+  ];
+
+  const initiateChatbot = () => {
+    setShowChatbot(true);
+    setChatMessages([{
+      role: 'bot',
+      message: chatbotQuestions[0]
+    }]);
+  };
+
+  const handleChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentInput.trim()) return;
+
+    // Add user message
+    const newMessages = [...chatMessages, { role: 'user' as const, message: currentInput }];
+    setChatMessages(newMessages);
+    setCurrentInput('');
+    setIsTyping(true);
+
+    // Simulate bot typing delay
+    setTimeout(() => {
+      const botResponseIndex = Math.floor(newMessages.length / 2);
+      
+      if (botResponseIndex < chatbotQuestions.length) {
+        setChatMessages(prev => [...prev, {
+          role: 'bot',
+          message: chatbotQuestions[botResponseIndex]
+        }]);
+      } else {
+        // End of questions, provide insights
+        setChatMessages(prev => [...prev, {
+          role: 'bot',
+          message: "I've learned a lot about you! Your answers show some fascinating patterns. The formal assessments above can give you even more detailed insights into your personality and strengths. Would you like to try one?"
+        }]);
+      }
+      setIsTyping(false);
+    }, 1000 + Math.random() * 1000);
+  };
 
   const strengthsQuestions = [
     {
@@ -444,6 +498,83 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Know Yourself</h1>
         <p className="text-gray-600">Discover your strengths, personality traits, and interests through fun, interactive quizzes.</p>
+      </div>
+
+      {/* Interactive Chatbot Section */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                <MessageCircle size={20} className="text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Discovery Chat</h3>
+                <p className="text-sm text-gray-600">Have a conversation to explore your interests and passions</p>
+              </div>
+            </div>
+            {!showChatbot && (
+              <button
+                onClick={initiateChatbot}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all flex items-center"
+              >
+                <MessageCircle size={16} className="mr-2" />
+                Start Chat
+              </button>
+            )}
+          </div>
+
+          {showChatbot && (
+            <div className="bg-white rounded-lg border border-gray-200 h-96 flex flex-col">
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {chatMessages.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      msg.role === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-900'
+                    }`}>
+                      <p className="text-sm">{msg.message}</p>
+                    </div>
+                  </div>
+                ))}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg max-w-xs">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Input */}
+              <div className="border-t border-gray-200 p-4">
+                <form onSubmit={handleChatSubmit} className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={currentInput}
+                    onChange={(e) => setCurrentInput(e.target.value)}
+                    placeholder="Type your response..."
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isTyping}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isTyping || !currentInput.trim()}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  >
+                    <Send size={16} />
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Assessment Categories */}
