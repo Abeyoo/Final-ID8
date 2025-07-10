@@ -3,6 +3,7 @@ import { Search, Filter, Users, Star, MessageCircle, UserPlus, MapPin, Clock, Ta
 
 const TeamFinder: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('teammates');
   const [selectedFilters, setSelectedFilters] = useState({
     strengths: [],
     interests: [],
@@ -85,6 +86,105 @@ const TeamFinder: React.FC = () => {
     }
   ];
 
+  const clubs = [
+    {
+      id: 1,
+      name: 'National Honor Society',
+      type: 'Academic Honor Society',
+      school: 'Lincoln High School',
+      avatar: 'NHS',
+      description: 'Dedicated to scholarship, leadership, service, and character development.',
+      members: 45,
+      activities: ['Community Service', 'Tutoring', 'Leadership Development'],
+      meetingTime: 'First Monday of each month',
+      requirements: 'Minimum 3.5 GPA, Teacher recommendations',
+      interests: ['Leadership', 'Service', 'Academic Excellence'],
+      location: 'San Francisco, CA',
+      status: 'Open for applications',
+      matchScore: 92
+    },
+    {
+      id: 2,
+      name: 'Robotics Club',
+      type: 'STEM Club',
+      school: 'Tech Academy',
+      avatar: 'RC',
+      description: 'Building robots and competing in FIRST Robotics competitions.',
+      members: 28,
+      activities: ['Robot Building', 'Programming', 'Competitions'],
+      meetingTime: 'Tuesdays & Thursdays 3-5pm',
+      requirements: 'Interest in engineering/programming',
+      interests: ['Robotics', 'Engineering', 'Technology'],
+      location: 'Austin, TX',
+      status: 'Recruiting new members',
+      matchScore: 89
+    },
+    {
+      id: 3,
+      name: 'Environmental Club',
+      type: 'Service Club',
+      school: 'Central High',
+      avatar: 'EC',
+      description: 'Promoting environmental awareness and sustainability on campus.',
+      members: 32,
+      activities: ['Campus Cleanup', 'Recycling Programs', 'Environmental Advocacy'],
+      meetingTime: 'Wednesdays 2:30-4:00pm',
+      requirements: 'Passion for environmental issues',
+      interests: ['Environment', 'Service', 'Science'],
+      location: 'Boston, MA',
+      status: 'Open membership',
+      matchScore: 85
+    },
+    {
+      id: 4,
+      name: 'Drama Club',
+      type: 'Arts Club',
+      school: 'Innovation Academy',
+      avatar: 'DC',
+      description: 'Performing arts club producing school plays and musicals.',
+      members: 24,
+      activities: ['Acting', 'Set Design', 'Costume Design', 'Production'],
+      meetingTime: 'Monday-Friday 3-6pm (production season)',
+      requirements: 'Audition or volunteer commitment',
+      interests: ['Theater', 'Arts', 'Performance'],
+      location: 'Seattle, WA',
+      status: 'Auditions open',
+      matchScore: 78
+    },
+    {
+      id: 5,
+      name: 'Debate Team',
+      type: 'Academic Club',
+      school: 'Lincoln High School',
+      avatar: 'DT',
+      description: 'Competitive debate team participating in local and national tournaments.',
+      members: 16,
+      activities: ['Research', 'Argumentation', 'Public Speaking', 'Tournaments'],
+      meetingTime: 'Tuesdays & Thursdays 3-5pm',
+      requirements: 'Strong communication skills, commitment to practice',
+      interests: ['Public Speaking', 'Research', 'Competition'],
+      location: 'San Francisco, CA',
+      status: 'Tryouts required',
+      matchScore: 81
+    },
+    {
+      id: 6,
+      name: 'Key Club',
+      type: 'Service Club',
+      school: 'Tech Academy',
+      avatar: 'KC',
+      description: 'Student-led organization focused on community service and leadership.',
+      members: 38,
+      activities: ['Community Service', 'Fundraising', 'Leadership Development'],
+      meetingTime: 'Second & Fourth Fridays 2:30-3:30pm',
+      requirements: 'Minimum 25 service hours per semester',
+      interests: ['Service', 'Leadership', 'Community'],
+      location: 'Austin, TX',
+      status: 'Open membership',
+      matchScore: 87
+    }
+  ];
+
   const strengthOptions = ['Leadership', 'Creative Thinking', 'Problem Solving', 'Communication', 'Teamwork', 'Research', 'Technical Skills', 'Organization'];
   const interestOptions = ['Science', 'Technology', 'Arts', 'Mathematics', 'Literature', 'History', 'Robotics', 'Engineering'];
 
@@ -102,6 +202,17 @@ const TeamFinder: React.FC = () => {
     return matchesSearch && matchesStrengths && matchesInterests;
   });
 
+  const filteredClubs = clubs.filter(club => {
+    const matchesSearch = club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         club.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         club.type.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesInterests = selectedFilters.interests.length === 0 ||
+                            selectedFilters.interests.some(interest => club.interests.includes(interest));
+    
+    return matchesSearch && matchesInterests;
+  });
+
   const toggleFilter = (category: string, value: string) => {
     setSelectedFilters(prev => ({
       ...prev,
@@ -116,7 +227,33 @@ const TeamFinder: React.FC = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Team Finder</h1>
-        <p className="text-gray-600">Connect with like-minded peers and find your perfect project partners.</p>
+        <p className="text-gray-600">Connect with like-minded peers and find your perfect project partners or join clubs and organizations.</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="mb-8">
+        <nav className="flex space-x-8 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('teammates')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'teammates'
+                ? 'border-purple-500 text-purple-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Find Teammates
+          </button>
+          <button
+            onClick={() => setActiveTab('clubs')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'clubs'
+                ? 'border-purple-500 text-purple-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Clubs & Organizations
+          </button>
+        </nav>
       </div>
 
       {/* Search and Filters */}
@@ -180,9 +317,10 @@ const TeamFinder: React.FC = () => {
         </div>
       </div>
 
-      {/* User Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredUsers.map(user => (
+      {/* Content based on active tab */}
+      {activeTab === 'teammates' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredUsers.map(user => (
           <div key={user.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
@@ -288,13 +426,112 @@ const TeamFinder: React.FC = () => {
               </button>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {filteredUsers.length === 0 && (
+      {/* Clubs & Organizations Tab */}
+      {activeTab === 'clubs' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredClubs.map(club => (
+            <div key={club.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{club.avatar}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">{club.name}</h3>
+                    <p className="text-sm text-gray-600">{club.type} • {club.school}</p>
+                    <div className="flex items-center mt-1">
+                      <MapPin size={14} className="text-gray-400 mr-1" />
+                      <span className="text-sm text-gray-500">{club.location}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900">{club.matchScore}% Match</div>
+                  <div className="flex items-center mt-1">
+                    <Users size={14} className="text-gray-400 mr-1" />
+                    <span className="text-sm text-gray-500">{club.members} members</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-gray-700 mb-4">{club.description}</p>
+
+              {/* Activities */}
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-900 mb-2">Activities</h4>
+                <div className="flex flex-wrap gap-2">
+                  {club.activities.map((activity, index) => (
+                    <span key={index} className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-sm">
+                      {activity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Meeting Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Clock size={16} className="text-gray-400 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">Meeting Time</span>
+                  </div>
+                  <p className="text-sm text-gray-600">{club.meetingTime}</p>
+                </div>
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Target size={16} className="text-gray-400 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">Requirements</span>
+                  </div>
+                  <p className="text-sm text-gray-600">{club.requirements}</p>
+                </div>
+              </div>
+
+              {/* Status and Action */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className={`w-3 h-3 rounded-full mr-2 ${
+                    club.status === 'Open membership' ? 'bg-green-500' :
+                    club.status === 'Recruiting new members' ? 'bg-blue-500' :
+                    club.status === 'Open for applications' ? 'bg-yellow-500' :
+                    'bg-orange-500'
+                  }`}></div>
+                  <span className="text-sm text-gray-600">{club.status}</span>
+                </div>
+                <div className="flex space-x-2">
+                  <button className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <MessageCircle size={16} className="mr-1" />
+                    Learn More
+                  </button>
+                  <button className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    <UserPlus size={16} className="mr-1" />
+                    Join
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* No results messages */}
+      {activeTab === 'teammates' && filteredUsers.length === 0 && (
         <div className="text-center py-12">
           <Users size={64} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No matches found</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No teammates found</h3>
+          <p className="text-gray-600">Try adjusting your search criteria or filters</p>
+        </div>
+      )}
+
+      {activeTab === 'clubs' && filteredClubs.length === 0 && (
+        <div className="text-center py-12">
+          <Users size={64} className="mx-auto text-gray-300 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No clubs found</h3>
           <p className="text-gray-600">Try adjusting your search criteria or filters</p>
         </div>
       )}
