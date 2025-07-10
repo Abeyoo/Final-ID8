@@ -166,6 +166,80 @@ const realOpportunities = [
     prizes: "Paid internship + research publication opportunity",
     participants: "60-70 positions annually",
     personalityFit: { Perfectionist: 90, Innovator: 85, Explorer: 80, Collaborator: 75, Leader: 70, Mediator: 60 }
+  },
+  
+  // Personality-Specific Opportunities
+  {
+    title: "Model United Nations International Conference",
+    type: "Competition",
+    category: "Leadership",
+    description: "Prestigious international conference simulating UN proceedings, perfect for diplomatic leaders and mediators.",
+    deadline: "2025-04-15",
+    location: "New York, NY",
+    requirements: ["MUN experience", "Strong research skills", "Public speaking ability"],
+    prizes: "International recognition + networking opportunities",
+    participants: "2,000+ delegates worldwide",
+    personalityFit: { Mediator: 95, Leader: 90, Collaborator: 85, Perfectionist: 80, Innovator: 70, Explorer: 75, Strategist: 90, Anchor: 65 }
+  },
+  {
+    title: "National Beta Club Convention",
+    type: "Conference",
+    category: "Community",
+    description: "Service-oriented leadership conference for students committed to academic excellence and community service.",
+    deadline: "2025-05-20",
+    location: "Various locations",
+    requirements: ["Beta Club membership", "Community service hours", "Academic excellence"],
+    prizes: "Leadership awards + scholarship opportunities",
+    participants: "10,000+ students nationally",
+    personalityFit: { Anchor: 95, Collaborator: 90, Mediator: 85, Perfectionist: 80, Leader: 75, Innovator: 60, Explorer: 65, Strategist: 70 }
+  },
+  {
+    title: "International Science and Engineering Fair (ISEF)",
+    type: "Competition",
+    category: "Science",
+    description: "World's largest pre-college science competition, showcasing independent research projects.",
+    deadline: "2025-03-15",
+    location: "Regional qualifiers + international final",
+    requirements: ["Original research project", "Regional qualification", "Scientific methodology"],
+    prizes: "$8 million in prizes + scholarships",
+    participants: "1,800+ students globally",
+    personalityFit: { Explorer: 95, Perfectionist: 90, Innovator: 85, Strategist: 80, Leader: 75, Collaborator: 70, Mediator: 60, Anchor: 65 }
+  },
+  {
+    title: "Future Business Leaders of America National Conference",
+    type: "Conference",
+    category: "Business",
+    description: "Premier business leadership conference with competitive events and networking opportunities.",
+    deadline: "2025-06-25",
+    location: "Various locations",
+    requirements: ["FBLA membership", "Competitive events qualification", "Business coursework"],
+    prizes: "Scholarships + internship opportunities",
+    participants: "12,000+ students",
+    personalityFit: { Strategist: 95, Leader: 90, Innovator: 80, Perfectionist: 75, Collaborator: 70, Mediator: 65, Explorer: 60, Anchor: 55 }
+  },
+  {
+    title: "National Art Honor Society Exhibition",
+    type: "Exhibition",
+    category: "Arts",
+    description: "Showcase for exceptional student artists, promoting artistic excellence and community engagement.",
+    deadline: "2025-04-30",
+    location: "Regional exhibitions nationwide",
+    requirements: ["NAHS membership", "Portfolio submission", "Community art service"],
+    prizes: "Art scholarships + exhibition opportunities",
+    participants: "5,000+ student artists",
+    personalityFit: { Innovator: 90, Explorer: 85, Perfectionist: 80, Mediator: 75, Collaborator: 70, Leader: 60, Strategist: 65, Anchor: 70 }
+  },
+  {
+    title: "Peer Mediation Training Certification",
+    type: "Program",
+    category: "Community",
+    description: "Training program for students to become certified peer mediators in their schools and communities.",
+    deadline: "2025-08-15",
+    location: "Various training centers",
+    requirements: ["Strong communication skills", "Conflict resolution interest", "Teacher recommendation"],
+    prizes: "Certification + community service hours",
+    participants: "500+ students annually",
+    personalityFit: { Mediator: 95, Collaborator: 90, Anchor: 85, Leader: 70, Perfectionist: 65, Innovator: 60, Explorer: 55, Strategist: 60 }
   }
 ];
 
@@ -189,8 +263,24 @@ async function generateOpportunityRecommendations(personalityData: any, userStat
 
     // Calculate match scores for each opportunity
     const opportunitiesWithScores = realOpportunities.map((opp, index) => {
-      // Calculate personality match
-      const personalityMatch = opp.personalityFit[userProfile.personalityType as keyof typeof opp.personalityFit] || 70;
+      // Calculate personality match (enhanced with secondary personality scores)
+      const primaryPersonalityMatch = opp.personalityFit[userProfile.personalityType as keyof typeof opp.personalityFit] || 70;
+      
+      // Factor in secondary personality traits if available
+      let personalityMatch = primaryPersonalityMatch;
+      if (userProfile.personalityScores) {
+        const secondaryMatches = Object.entries(userProfile.personalityScores)
+          .filter(([type, score]) => type !== userProfile.personalityType && (score as number) > 0.6)
+          .map(([type, score]) => {
+            const typeMatch = opp.personalityFit[type as keyof typeof opp.personalityFit] || 70;
+            return typeMatch * (score as number) * 0.3; // Weight secondary traits at 30%
+          });
+        
+        if (secondaryMatches.length > 0) {
+          const secondaryBonus = Math.max(...secondaryMatches);
+          personalityMatch = Math.min(personalityMatch + secondaryBonus, 95);
+        }
+      }
       
       // Calculate category match based on initial interests, goals, and achievements
       const userInterests = [
@@ -231,8 +321,23 @@ async function generateOpportunityRecommendations(personalityData: any, userStat
       // Calculate activity match based on user stats
       const activityMatch = userProfile.stats.achievements > 2 ? 85 : 75;
       
-      // Combined match score
-      const matchScore = Math.round((personalityMatch + categoryMatch + activityMatch) / 3);
+      // Enhanced weighted combination: personality is now 40%, category 35%, activity 25%
+      const matchScore = Math.round((personalityMatch * 0.4) + (categoryMatch * 0.35) + (activityMatch * 0.25));
+      
+      // Generate personality-based recommendation reason
+      const getPersonalityReason = () => {
+        const topPersonalities = Object.entries(opp.personalityFit)
+          .sort(([,a], [,b]) => (b as number) - (a as number))
+          .slice(0, 3)
+          .map(([type, score]) => `${type}s (${score}%)`)
+          .join(', ');
+        
+        return `Perfect for ${topPersonalities}. ${
+          primaryPersonalityMatch >= 85 ? 'Highly aligned with your personality!' :
+          primaryPersonalityMatch >= 75 ? 'Good personality match.' :
+          'Opportunity to develop new skills.'
+        }`;
+      };
       
       return {
         id: Date.now() + index,
@@ -240,7 +345,9 @@ async function generateOpportunityRecommendations(personalityData: any, userStat
         match: Math.min(matchScore, 98), // Cap at 98% to seem realistic
         featured: matchScore >= 85,
         aiGenerated: true,
-        recommendedAt: new Date().toISOString()
+        recommendedAt: new Date().toISOString(),
+        personalityReason: getPersonalityReason(),
+        personalityScore: primaryPersonalityMatch
       };
     });
 

@@ -719,6 +719,17 @@ const Opportunities: React.FC = () => {
                   </div>
                   <p className="text-sm text-gray-600 mb-3">{opportunity.description}</p>
                   
+                  {opportunity.personalityReason && (
+                    <div className="bg-purple-50 rounded-lg p-2 mb-3">
+                      <div className="flex items-start space-x-2">
+                        <Brain size={14} className="text-purple-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-purple-700 font-medium">
+                          {opportunity.personalityReason}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="space-y-2 text-xs text-gray-500 mb-4">
                     <div className="flex items-center">
                       <Calendar size={12} className="mr-1" />

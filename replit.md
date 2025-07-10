@@ -139,6 +139,14 @@ A comprehensive student development platform that helps students with career ass
       - Business: "Entrepreneurship, economics"
       - Environment: "Climate, conservation, green tech"
       - Social Sciences: "Psychology, sociology, history, political science"
+  - **Enhanced Personality-Based Opportunity Matching (2025-07-10)**:
+    - Expanded opportunity database to include personality-specific programs for all 8 personality types
+    - Added specialized opportunities for underrepresented types: Anchor (Beta Club), Mediator (Model UN), Strategist (FBLA)
+    - Enhanced matching algorithm to consider secondary personality traits (30% weight for strong secondary traits)
+    - Increased personality weight in overall matching from 33% to 40% of total score
+    - Added personality-specific reasoning explanations for each recommendation
+    - New opportunities added: Model UN (Mediator: 95%), ISEF (Explorer: 95%), Peer Mediation (Mediator: 95%), National Beta Club (Anchor: 95%)
+    - System now provides detailed personality fit explanations and targeted recommendations based on user's primary and secondary traits
 
 ## Development Notes
 - Uses mock authentication with predefined user accounts for testing
