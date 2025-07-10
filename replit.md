@@ -112,6 +112,13 @@ A comprehensive student development platform that helps students with career ass
     - Added proper password validation for traditional accounts (6+ character minimum)
     - Fixed authentication flow to properly validate credentials before creating sessions
     - Maintained backward compatibility with existing user accounts
+- **2025-07-10**: Enhanced opportunity recommendation system with improved category matching
+  - Added initialInterests field to user schema to store interests from account creation
+  - Updated opportunity matching algorithm to prioritize user's initial interests (40% weight)
+  - Implemented weighted scoring: initial interests (25 points), goals (15 points), achievements (10 points)
+  - Enhanced category matching with bidirectional string matching for better accuracy
+  - Fixed frontend to use authenticated user's real ID instead of hardcoded values
+  - System now properly accounts for user's original interests along with behavioral data
 
 ## Development Notes
 - Uses mock authentication with predefined user accounts for testing

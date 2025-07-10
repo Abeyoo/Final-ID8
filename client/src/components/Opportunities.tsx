@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Search, Filter, MapPin, Calendar, Users, ExternalLink, Brain, Sparkles, X, Clock, Award, CheckCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../hooks/useAuth';
 
 const Opportunities: React.FC = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAIRecommendations, setShowAIRecommendations] = useState(true);
@@ -12,8 +14,8 @@ const Opportunities: React.FC = () => {
 
   // Fetch AI-powered opportunity recommendations
   const { data: aiRecommendations = [], isLoading: isLoadingAI } = useQuery({
-    queryKey: ['/api/opportunities/recommendations/1'], // TODO: Use actual user ID
-    enabled: showAIRecommendations,
+    queryKey: ['/api/opportunities/recommendations', user?.id],
+    enabled: showAIRecommendations && !!user?.id,
   });
 
   const trackOpportunityInteraction = async (
@@ -25,7 +27,7 @@ const Opportunities: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: 1, // TODO: Get from user context
+          userId: user?.id,
           opportunityType: opportunity.type.toLowerCase(),
           category: opportunity.category,
           title: opportunity.title,

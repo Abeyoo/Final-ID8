@@ -23,6 +23,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"), // For traditional accounts
   personalityType: text("personality_type"),
   personalityScores: jsonb("personality_scores"), // Store scores for all 6 personality types
+  initialInterests: text("initial_interests").array(), // User's interests from account creation
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -170,11 +170,12 @@ const realOpportunities = [
 ];
 
 // Smart opportunity matching function
-async function generateOpportunityRecommendations(personalityData: any, userStats: any, userId: number) {
+async function generateOpportunityRecommendations(personalityData: any, userStats: any, userId: string) {
   try {
-    // Get user's goals and achievements for context
+    // Get user's goals, achievements, and initial interests for context
     const userGoals = await db.select().from(schema.goals).where(eq(schema.goals.userId, userId));
     const userAchievements = await db.select().from(schema.achievements).where(eq(schema.achievements.userId, userId));
+    const [userRecord] = await db.select().from(schema.users).where(eq(schema.users.id, userId));
     
     // Create user profile for matching
     const userProfile = {
@@ -182,7 +183,8 @@ async function generateOpportunityRecommendations(personalityData: any, userStat
       personalityScores: personalityData.personalityScores,
       stats: userStats,
       goals: userGoals.map(g => ({ title: g.title, category: g.category, completed: g.completed })),
-      achievements: userAchievements.map(a => ({ title: a.title, type: a.achievementType, description: a.description }))
+      achievements: userAchievements.map(a => ({ title: a.title, type: a.achievementType, description: a.description })),
+      initialInterests: userRecord?.initialInterests || [] // Include initial interests from account creation
     };
 
     // Calculate match scores for each opportunity
@@ -190,16 +192,41 @@ async function generateOpportunityRecommendations(personalityData: any, userStat
       // Calculate personality match
       const personalityMatch = opp.personalityFit[userProfile.personalityType as keyof typeof opp.personalityFit] || 70;
       
-      // Calculate category match based on goals and achievements
+      // Calculate category match based on initial interests, goals, and achievements
       const userInterests = [
+        ...userProfile.initialInterests.map(i => i.toLowerCase()), // Initial interests from account creation
         ...userProfile.goals.map(g => g.category.toLowerCase()),
         ...userProfile.achievements.map(a => a.type.toLowerCase())
       ];
       
-      const categoryMatch = userInterests.some(interest => 
-        opp.category.toLowerCase().includes(interest) || 
-        opp.type.toLowerCase().includes(interest)
-      ) ? 85 : 70;
+      // Enhanced category matching with priority scoring
+      let categoryMatch = 70; // Base score
+      
+      // Check initial interests (highest priority - weight 40%)
+      const initialInterestMatch = userProfile.initialInterests.some(interest => 
+        opp.category.toLowerCase().includes(interest.toLowerCase()) || 
+        opp.type.toLowerCase().includes(interest.toLowerCase()) ||
+        interest.toLowerCase().includes(opp.category.toLowerCase())
+      );
+      
+      // Check goal-based interests (medium priority - weight 30%)
+      const goalMatch = userProfile.goals.some(goal => 
+        opp.category.toLowerCase().includes(goal.category.toLowerCase()) || 
+        opp.type.toLowerCase().includes(goal.category.toLowerCase())
+      );
+      
+      // Check achievement-based interests (lower priority - weight 30%)
+      const achievementMatch = userProfile.achievements.some(achievement => 
+        opp.category.toLowerCase().includes(achievement.type.toLowerCase()) || 
+        opp.type.toLowerCase().includes(achievement.type.toLowerCase())
+      );
+      
+      // Calculate weighted category match
+      if (initialInterestMatch) categoryMatch += 25; // Strong bonus for initial interests
+      if (goalMatch) categoryMatch += 15; // Medium bonus for goal alignment
+      if (achievementMatch) categoryMatch += 10; // Small bonus for achievement alignment
+      
+      categoryMatch = Math.min(categoryMatch, 95); // Cap at 95%
       
       // Calculate activity match based on user stats
       const activityMatch = userProfile.stats.achievements > 2 ? 85 : 75;
@@ -263,6 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: name.split(' ').slice(1).join(' ') || '',
         profileImageUrl: null,
         passwordHash, // Store hashed password
+        initialInterests: interests || [], // Store user's initial interests
         id: `traditional_${Date.now()}` // Generate unique ID for traditional signup
       }).returning();
       
@@ -1314,7 +1342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-powered opportunity recommendations
   app.get("/api/opportunities/recommendations/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId; // Keep as string since user IDs are strings
       
       // Get user's personality analysis and stats
       const personalityData = await personalityAI.analyzeUserPersonality(userId);
