@@ -141,6 +141,17 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
 
+  // Fetch user's personality data for the profile section
+  const { data: personalityData } = useQuery({
+    queryKey: ['/api/personality', userProfile?.id],
+    enabled: !!userProfile?.id,
+  });
+
+  const { data: percentileData } = useQuery({
+    queryKey: ['/api/personality', userProfile?.id, 'percentiles'],
+    enabled: !!userProfile?.id,
+  });
+
   // Fetch user's assessment completion status
   const { data: completionStatus, isLoading: isLoadingStatus } = useQuery({
     queryKey: ['/api/assessments', userProfile?.id],
@@ -494,11 +505,21 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                 <h3 className="font-semibold">Top Strengths</h3>
               </div>
               <ul className="text-sm space-y-1 opacity-90">
-                <li>• Leadership (95%)</li>
-                <li>• Creativity (88%)</li>
-                <li>• Communication (92%)</li>
-                <li>• Empathy (85%)</li>
-                <li>• Problem Solving (90%)</li>
+                {personalityData?.personalityScores ? 
+                  Object.entries(personalityData.personalityScores)
+                    .sort(([,a], [,b]) => (b as number) - (a as number))
+                    .slice(0, 4)
+                    .map(([type, score], index) => (
+                      <li key={type}>• {type} ({Math.round((score as number) * 100)}%)</li>
+                    ))
+                  :
+                  [
+                    <li key="1">• Complete quizzes to see your strengths</li>,
+                    <li key="2">• Take personality assessment first</li>,
+                    <li key="3">• Discover your unique traits</li>,
+                    <li key="4">• Build your personal profile</li>
+                  ]
+                }
               </ul>
             </div>
             <div className="bg-white bg-opacity-20 rounded-lg p-4">
@@ -506,8 +527,26 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                 <Brain size={20} className="mr-2" />
                 <h3 className="font-semibold">Personality Type</h3>
               </div>
-              <p className="text-sm opacity-90 font-medium">ENFJ - The Protagonist</p>
-              <p className="text-xs opacity-75 mt-1">Natural born leaders, full of passion and charisma. Inspiring and motivating others.</p>
+              {personalityData?.personalityType ? (
+                <>
+                  <p className="text-sm opacity-90 font-medium">{personalityData.personalityType}</p>
+                  <p className="text-xs opacity-75 mt-1">
+                    {personalityData.personalityType === 'Leader' && 'Natural born leaders, full of passion and charisma. Inspiring and motivating others.'}
+                    {personalityData.personalityType === 'Innovator' && 'Creative problem-solvers who love exploring new ideas and possibilities.'}
+                    {personalityData.personalityType === 'Collaborator' && 'Team players who excel at bringing people together and building consensus.'}
+                    {personalityData.personalityType === 'Perfectionist' && 'Detail-oriented individuals who strive for excellence and high standards.'}
+                    {personalityData.personalityType === 'Explorer' && 'Curious learners who love discovering new knowledge and experiences.'}
+                    {personalityData.personalityType === 'Mediator' && 'Diplomatic individuals who excel at resolving conflicts and finding common ground.'}
+                    {personalityData.personalityType === 'Strategist' && 'Strategic thinkers who excel at long-term planning and pattern recognition.'}
+                    {personalityData.personalityType === 'Anchor' && 'Reliable individuals who provide stability and support to their teams.'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm opacity-90 font-medium">Take the personality quiz</p>
+                  <p className="text-xs opacity-75 mt-1">Complete the personality assessment to discover your unique type and characteristics.</p>
+                </>
+              )}
             </div>
             <div className="bg-white bg-opacity-20 rounded-lg p-4">
               <div className="flex items-center mb-2">
@@ -515,10 +554,18 @@ const SelfAssessment: React.FC<SelfAssessmentProps> = ({ userProfile }) => {
                 <h3 className="font-semibold">Core Values</h3>
               </div>
               <ul className="text-sm space-y-1 opacity-90">
-                <li>• Making a Difference</li>
-                <li>• Collaboration</li>
-                <li>• Innovation</li>
-                <li>• Personal Growth</li>
+                {userProfile?.initialInterests && userProfile.initialInterests.length > 0 ? 
+                  userProfile.initialInterests.slice(0, 4).map((interest: string, index: number) => (
+                    <li key={index}>• {interest}</li>
+                  ))
+                  :
+                  [
+                    <li key="1">• Complete your profile setup</li>,
+                    <li key="2">• Add your interests during signup</li>,
+                    <li key="3">• Set goals to discover values</li>,
+                    <li key="4">• Take assessments to learn more</li>
+                  ]
+                }
               </ul>
             </div>
           </div>
