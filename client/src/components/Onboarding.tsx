@@ -39,14 +39,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToSignIn }) =
   ];
 
   const interests = [
-    { id: 'science', label: 'Science & Research', icon: Brain },
-    { id: 'arts', label: 'Arts & Creativity', icon: Heart },
-    { id: 'technology', label: 'Technology & Programming', icon: Zap },
-    { id: 'sports', label: 'Sports & Athletics', icon: Target },
-    { id: 'leadership', label: 'Leadership & Management', icon: Star },
-    { id: 'writing', label: 'Writing & Literature', icon: Lightbulb },
-    { id: 'music', label: 'Music & Performance', icon: Heart },
-    { id: 'environment', label: 'Environment & Sustainability', icon: Shield }
+    { id: 'Science', label: 'Science & Research', icon: Brain },
+    { id: 'Technology', label: 'Technology & Programming', icon: Zap },
+    { id: 'Arts', label: 'Arts & Creativity', icon: Heart },
+    { id: 'Leadership', label: 'Leadership & Management', icon: Star },
+    { id: 'Sports', label: 'Sports & Athletics', icon: Target },
+    { id: 'Community', label: 'Community Service', icon: Lightbulb },
+    { id: 'Business', label: 'Business & Finance', icon: Shield },
+    { id: 'Environment', label: 'Environment & Sustainability', icon: Shield }
   ];
 
   const personalityQuestions = [

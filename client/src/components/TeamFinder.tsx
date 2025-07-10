@@ -38,7 +38,7 @@ const TeamFinder: React.FC = () => {
       avatar: 'MR',
       personalityType: 'Leader',
       strengths: ['Leadership', 'Organization', 'Technical Skills'],
-      interests: ['Technology', 'Robotics', 'Engineering'],
+      interests: ['Technology', 'Science', 'Leadership'],
       currentProjects: ['Robotics Competition', 'Coding Bootcamp'],
       availability: 'Afternoons',
       location: 'Austin, TX',
@@ -56,7 +56,7 @@ const TeamFinder: React.FC = () => {
       avatar: 'ET',
       personalityType: 'Collaborator',
       strengths: ['Teamwork', 'Research', 'Writing'],
-      interests: ['Literature', 'History', 'Social Issues'],
+      interests: ['Arts', 'Community', 'Leadership'],
       currentProjects: ['Debate Team', 'Community Service'],
       availability: 'Evenings',
       location: 'Boston, MA',
@@ -74,7 +74,7 @@ const TeamFinder: React.FC = () => {
       avatar: 'AK',
       personalityType: 'Analyst',
       strengths: ['Data Analysis', 'Mathematics', 'Critical Thinking'],
-      interests: ['Mathematics', 'Science', 'Analytics'],
+      interests: ['Science', 'Technology', 'Business'],
       currentProjects: ['Math Olympiad', 'Data Science Project'],
       availability: 'Flexible',
       location: 'Seattle, WA',
@@ -98,7 +98,7 @@ const TeamFinder: React.FC = () => {
       activities: ['Community Service', 'Tutoring', 'Leadership Development'],
       meetingTime: 'First Monday of each month',
       requirements: 'Minimum 3.5 GPA, Teacher recommendations',
-      interests: ['Leadership', 'Service', 'Academic Excellence'],
+      interests: ['Leadership', 'Community', 'Business'],
       location: 'San Francisco, CA',
       status: 'Open for applications',
       matchScore: 92
@@ -114,7 +114,7 @@ const TeamFinder: React.FC = () => {
       activities: ['Robot Building', 'Programming', 'Competitions'],
       meetingTime: 'Tuesdays & Thursdays 3-5pm',
       requirements: 'Interest in engineering/programming',
-      interests: ['Robotics', 'Engineering', 'Technology'],
+      interests: ['Technology', 'Science', 'Leadership'],
       location: 'Austin, TX',
       status: 'Recruiting new members',
       matchScore: 89
@@ -130,7 +130,7 @@ const TeamFinder: React.FC = () => {
       activities: ['Campus Cleanup', 'Recycling Programs', 'Environmental Advocacy'],
       meetingTime: 'Wednesdays 2:30-4:00pm',
       requirements: 'Passion for environmental issues',
-      interests: ['Environment', 'Service', 'Science'],
+      interests: ['Environment', 'Community', 'Science'],
       location: 'Boston, MA',
       status: 'Open membership',
       matchScore: 85
@@ -146,7 +146,7 @@ const TeamFinder: React.FC = () => {
       activities: ['Acting', 'Set Design', 'Costume Design', 'Production'],
       meetingTime: 'Monday-Friday 3-6pm (production season)',
       requirements: 'Audition or volunteer commitment',
-      interests: ['Theater', 'Arts', 'Performance'],
+      interests: ['Arts', 'Leadership', 'Community'],
       location: 'Seattle, WA',
       status: 'Auditions open',
       matchScore: 78
@@ -162,7 +162,7 @@ const TeamFinder: React.FC = () => {
       activities: ['Research', 'Argumentation', 'Public Speaking', 'Tournaments'],
       meetingTime: 'Tuesdays & Thursdays 3-5pm',
       requirements: 'Strong communication skills, commitment to practice',
-      interests: ['Public Speaking', 'Research', 'Competition'],
+      interests: ['Leadership', 'Arts', 'Business'],
       location: 'San Francisco, CA',
       status: 'Tryouts required',
       matchScore: 81
@@ -178,7 +178,7 @@ const TeamFinder: React.FC = () => {
       activities: ['Community Service', 'Fundraising', 'Leadership Development'],
       meetingTime: 'Second & Fourth Fridays 2:30-3:30pm',
       requirements: 'Minimum 25 service hours per semester',
-      interests: ['Service', 'Leadership', 'Community'],
+      interests: ['Community', 'Leadership', 'Business'],
       location: 'Austin, TX',
       status: 'Open membership',
       matchScore: 87
@@ -186,7 +186,7 @@ const TeamFinder: React.FC = () => {
   ];
 
   const strengthOptions = ['Leadership', 'Creative Thinking', 'Problem Solving', 'Communication', 'Teamwork', 'Research', 'Technical Skills', 'Organization'];
-  const interestOptions = ['Science', 'Technology', 'Arts', 'Mathematics', 'Literature', 'History', 'Robotics', 'Engineering'];
+  const interestOptions = ['Science', 'Technology', 'Arts', 'Leadership', 'Sports', 'Community', 'Business', 'Environment'];
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

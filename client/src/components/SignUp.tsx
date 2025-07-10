@@ -23,14 +23,14 @@ const SignUp: React.FC<SignUpProps> = ({ onSignUp, onBackToSignIn }) => {
 
   // Interest categories
   const interestCategories = [
-    { id: 'STEM', name: 'Science & Technology', icon: '🔬', description: 'Engineering, coding, research' },
-    { id: 'Arts', name: 'Creative Arts', icon: '🎨', description: 'Visual arts, music, writing' },
-    { id: 'Leadership', name: 'Leadership', icon: '👑', description: 'Student government, organizing' },
-    { id: 'Sports', name: 'Athletics', icon: '⚽', description: 'Team sports, fitness, competition' },
+    { id: 'Science', name: 'Science & Research', icon: '🔬', description: 'Biology, chemistry, physics, research' },
+    { id: 'Technology', name: 'Technology & Programming', icon: '💻', description: 'Coding, robotics, engineering' },
+    { id: 'Arts', name: 'Arts & Creativity', icon: '🎨', description: 'Visual arts, music, writing' },
+    { id: 'Leadership', name: 'Leadership & Management', icon: '👑', description: 'Student government, organizing' },
+    { id: 'Sports', name: 'Sports & Athletics', icon: '⚽', description: 'Team sports, fitness, competition' },
     { id: 'Community', name: 'Community Service', icon: '🤝', description: 'Volunteering, social impact' },
     { id: 'Business', name: 'Business & Finance', icon: '💼', description: 'Entrepreneurship, economics' },
-    { id: 'Culture', name: 'Culture & Language', icon: '🌍', description: 'Languages, cultural exchange' },
-    { id: 'Academic', name: 'Academic Competitions', icon: '🧠', description: 'Debate, quiz bowl, olympiads' }
+    { id: 'Environment', name: 'Environment & Sustainability', icon: '🌍', description: 'Climate, conservation, green tech' }
   ];
 
   // Personality assessment questions
