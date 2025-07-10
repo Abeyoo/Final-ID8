@@ -6,18 +6,16 @@ import {
   Users, 
   Trophy, 
   Award, 
-  Calendar, 
   MessageCircle,
   Menu,
   X,
   Search,
   Kanban,
   Bot,
-  Briefcase,
   LogOut
 } from 'lucide-react';
 
-type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'schedule' | 'community' | 'team-finder' | 'project-board' | 'ai-chat' | 'portfolio';
+type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'community' | 'team-finder' | 'project-board' | 'ai-chat';
 
 interface NavigationProps {
   activeSection: ActiveSection;
@@ -35,8 +33,6 @@ const navigationItems = [
   { id: 'project-board', label: 'Project Board', icon: Kanban },
   { id: 'opportunities', label: 'Opportunities', icon: Trophy },
   { id: 'achievements', label: 'Achievements', icon: Award },
-  { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
-  { id: 'schedule', label: 'Schedule', icon: Calendar },
   { id: 'community', label: 'Community', icon: MessageCircle },
   { id: 'ai-chat', label: 'AI Assistant', icon: Bot },
 ];

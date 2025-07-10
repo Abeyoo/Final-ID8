@@ -147,6 +147,7 @@ A comprehensive student development platform that helps students with career ass
     - Added personality-specific reasoning explanations for each recommendation
     - New opportunities added: Model UN (Mediator: 95%), ISEF (Explorer: 95%), Peer Mediation (Mediator: 95%), National Beta Club (Anchor: 95%)
     - System now provides detailed personality fit explanations and targeted recommendations based on user's primary and secondary traits
+    - **Removed Portfolio and Schedule sections** from navigation and routing to streamline platform focus on core features
 
 ## Development Notes
 - Uses mock authentication with predefined user accounts for testing

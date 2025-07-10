@@ -7,18 +7,16 @@ import DevelopmentPlans from './components/DevelopmentPlans';
 import TeamCollaboration from './components/TeamCollaboration';
 import Opportunities from './components/Opportunities';
 import Achievements from './components/Achievements';
-import Schedule from './components/Schedule';
 import Community from './components/Community';
 import TeamFinder from './components/TeamFinder';
 import ProjectBoard from './components/ProjectBoard';
 import AIChat from './components/AIChat';
-import Portfolio from './components/Portfolio';
 import Onboarding from './components/Onboarding';
 import AuthChoice from './components/AuthChoice';
 import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 
-type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'schedule' | 'community' | 'team-finder' | 'project-board' | 'ai-chat' | 'portfolio';
+type ActiveSection = 'dashboard' | 'assessment' | 'development' | 'team' | 'opportunities' | 'achievements' | 'community' | 'team-finder' | 'project-board' | 'ai-chat';
 
 // Landing page component for logged-out users
 function Landing({ onGetStarted }: { onGetStarted: () => void }) {
@@ -101,14 +99,10 @@ function Home({ userProfile, activeSection, setActiveSection }: {
         return <Opportunities />;
       case 'achievements':
         return <Achievements />;
-      case 'schedule':
-        return <Schedule />;
       case 'community':
         return <Community />;
       case 'ai-chat':
         return <AIChat userProfile={userProfile} />;
-      case 'portfolio':
-        return <Portfolio userProfile={userProfile} />;
       default:
         return <Dashboard userProfile={userProfile} />;
     }
